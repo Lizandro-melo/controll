@@ -1,17 +1,21 @@
 import Image from "next/image";
-import { ReactNode } from "react";
+import { ReactNode, useContext } from "react";
 import { IoBarChartOutline } from "react-icons/io5";
-import { FiMenu } from "react-icons/fi";
+import { FiAlertTriangle, FiBox, FiMenu, FiUsers } from "react-icons/fi";
 import { Button } from "./button";
 import { useSearchParams } from "next/navigation";
 import Router from "next/router";
 import { cn } from "@/lib/utils";
+import { LuDoorOpen } from "react-icons/lu";
+
 import { LuCar } from "react-icons/lu";
+import { ContextAuth } from "@/provider/provider_auth";
 
 export default function Nav({ children }: { children: ReactNode }) {
   const searchParams = useSearchParams();
   const status = eval(searchParams.get("status")!);
   const asPath = Router.asPath.replace(/\?\D+/, "");
+  const { loginOff } = useContext(ContextAuth);
 
   const handleState = (status: boolean) => {
     const params = new URLSearchParams(searchParams.toString());
@@ -35,7 +39,14 @@ export default function Nav({ children }: { children: ReactNode }) {
           path === asPath && "bg-stone-100!",
         )}
         onClick={() => {
-          if (path) Router.push(path);
+          switch (path) {
+            case "/auth":
+              loginOff();
+              break;
+            default:
+              Router.push(path!);
+              break;
+          }
         }}
       >
         {icon}
@@ -57,6 +68,26 @@ export default function Nav({ children }: { children: ReactNode }) {
           title="Veiculos"
           path="/veiculos"
         />
+        <ItemList
+          icon={<FiBox className="w-[20px] h-[20px]" />}
+          title="Peças"
+          path="/part"
+        />
+        <ItemList
+          icon={<FiUsers className="w-[20px] h-[20px]" />}
+          title="Clientes"
+          path="/cliente"
+        />
+        <ItemList
+          icon={<FiAlertTriangle className="w-[20px] h-[20px]" />}
+          title="Alertas"
+          path="/alert"
+        />
+        <ItemList
+          icon={<LuDoorOpen className="w-[20px] h-[20px]" />}
+          title="Sair"
+          path="/auth"
+        />
       </ul>
     );
   };
@@ -65,7 +96,7 @@ export default function Nav({ children }: { children: ReactNode }) {
     <>
       <nav
         className={cn(
-          "relative bg-white h-full px-5 py-10 w-[300px] flex items-center justify-start border-r gap-10 flex-col max-sm:-left-full max-sm:absolute z-40 transition-all",
+          "relative bg-white h-full px-5 py-10 w-[300px] flex items-center justify-start border-r gap-10 flex-col max-lg:-left-full max-lg:absolute z-40 transition-all",
           status && "left-0!",
         )}
       >
@@ -77,7 +108,7 @@ export default function Nav({ children }: { children: ReactNode }) {
         />
         <NavItens />
       </nav>
-      <div className="sticky bg-white top-0 w-full h-[80px] flex items-center justify-between px-5 border-b min-sm:hidden z-40">
+      <div className="sticky bg-white top-0 w-full h-[80px] flex items-center justify-between px-5 border-b min-lg:hidden z-40">
         <Image
           src={"/assets/letreiro.png"}
           width={120}
@@ -92,8 +123,7 @@ export default function Nav({ children }: { children: ReactNode }) {
           <FiMenu />
         </Button>
       </div>
-
-      <div className="relative w-[calc(100%-300px)] h-full overflow-auto p-5 max-sm:w-full max-sm:h-[calc(100%-80px)]">
+      <div className="relative w-[calc(100%-300px)] h-full overflow-auto p-5 max-lg:w-full max-lg:h-[calc(100%-80px)]!">
         {children}
       </div>
     </>

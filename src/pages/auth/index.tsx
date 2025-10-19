@@ -1,41 +1,25 @@
 import { Button } from "@/components/ui/button";
 import LabelInput from "@/components/ui/label-input";
+import { formatInputLogin } from "@/lib/utils";
+import { ContextAuth, LoginData } from "@/provider/provider_auth";
 import Image from "next/image";
-import { FormEvent, FormEventHandler } from "react";
+import Link from "next/link";
+import { FormEvent, FormEventHandler, useContext } from "react";
 import { useForm } from "react-hook-form";
 
 export default function Auth() {
   const {
     register,
     handleSubmit,
-    watch,
     formState: { errors },
-  } = useForm();
-
-  const formatInputLogin = (e: FormEvent<HTMLInputElement>) => {
-    e.currentTarget.value = e.currentTarget.value
-      .replace(/\D/g, "")
-      .slice(0, 11);
-    if (e.currentTarget.value.length <= 3)
-      e.currentTarget.value = e.currentTarget.value;
-    if (e.currentTarget.value.length <= 6)
-      e.currentTarget.value = e.currentTarget.value.replace(
-        /(\d{3})(\d{1,3})/,
-        "$1.$2",
-      );
-    if (e.currentTarget.value.length <= 9)
-      e.currentTarget.value = e.currentTarget.value.replace(
-        /(\d{3})(\d{3})(\d{1,3})/,
-        "$1.$2.$3",
-      );
-    e.currentTarget.value = e.currentTarget.value.replace(
-      /(\d{3})(\d{3})(\d{3})(\d{1,2})/,
-      "$1.$2.$3-$4",
-    );
-  };
+  } = useForm<LoginData>();
+  const { loginIn } = useContext(ContextAuth);
 
   return (
-    <form className="border shadow-2xl rounded-xl p-14 max-sm:px-5 max-sm:py-14 max-sm:w-full flex justify-center items-center flex-col gap-10">
+    <form
+      onSubmit={handleSubmit(loginIn)}
+      className="border shadow-2xl rounded-xl p-14 max-sm:px-5 max-sm:py-14 max-sm:w-full flex justify-center items-center flex-col gap-10 w-[600px]"
+    >
       <div>
         <Image
           src={"/assets/letreiro.png"}
@@ -46,22 +30,42 @@ export default function Auth() {
       </div>
       <div className="flex flex-col gap-4">
         <LabelInput
-          {...register("Login")}
+          {...register("login", {
+            required: true,
+          })}
+          id="Login"
+          placeholder="CPF"
           maxLength={14}
+          className="w-[300px]"
           onInput={formatInputLogin}
         />
         <div className="flex flex-col gap-2">
-          <LabelInput {...register("Senha")} type="password" />
+          <LabelInput
+            placeholder="Senha"
+            id="Senha"
+            className="w-[300px]"
+            {...register("senha", { required: true })}
+            type="password"
+          />
           <span className="text-xs">
             Esqueceu a senha?{" "}
-            <a className="text-[val(--text-prymary-color)]" href="#">
+            <Link
+              className="text-[val(--text-prymary-color)] underline cursor-pointer"
+              href="/auth/reset"
+            >
               clique aqui!
-            </a>
+            </Link>
+            <p className="text-red-400">
+              {(errors.login || errors.senha) &&
+                "Todos os campos são obrigatorios"}
+            </p>
           </span>
         </div>
       </div>
       <div>
-        <Button className="px-10 text-lg">Entrar</Button>
+        <Button type="submit" className="px-10 text-sm">
+          Entrar
+        </Button>
       </div>
     </form>
   );

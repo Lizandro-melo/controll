@@ -1,0 +1,201 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Tipo_User {
+  MASTER
+  USER
+}
+
+enum Status_veiculo {
+  LIVRE
+  ALUGADO
+}
+
+enum Tipo_veiculo {
+  MOTO
+  CARRO
+}
+
+enum Tipo_Peca {
+  // Pneus
+  PNEU
+
+  // Freios
+  PASTILHA_FREIO
+  DISCO_FREIO
+  SAPATA_FREIO
+
+  // Embreagem (carro/moto)
+  EMBREAGEM_PLATO
+  EMBREAGEM_DISCO
+  EMBREAGEM_ROLAMENTO
+  MOLAS_EMBREAGEM
+
+  // Transmissão de moto
+  CORRENTE_TRANSMISSAO
+  COROA_TRANSMISSAO
+  PINHAO_TRANSMISSAO
+
+  // Correias (carro)
+  CORREIA_DENTADA
+  CORREIA_ALTERNADOR
+  CORREIA_ACESSORIOS
+
+  // Ignição
+  VELA_IGNICAO
+
+  // Suspensão
+  AMORTECEDOR
+  AMORTECEDOR_DIANTEIRO
+  AMORTECEDOR_TRASEIRO
+  BUCHA_SUSPENSAO
+  PIVO_SUSPENSAO
+
+  // Direção
+  TERMINAL_DIRECAO
+  ROLAMENTO_DIRECAO
+
+  // Montagem/Powertrain
+  COXIM_MOTOR
+  COXIM_CAMBIO
+
+  // Elétrica
+  BATERIA
+  ESCOVA_ALTERNADOR
+  ESCOVA_MOTOR_PARTIDA
+  LAMPADA
+
+  // Rolamentos
+  ROLAMENTO_RODA
+
+  // Cabos (moto)
+  CABO_EMBREAGEM
+  CABO_ACELERADOR
+  CABO_FREIO
+
+  // Filtros
+  FILTRO_AR
+  FILTRO_OLEO
+  FILTRO_COMBUSTIVEL
+  FILTRO_CABINE
+
+  // Consumíveis (fluídos)
+  CONSUMIVEL_OLEO_MOTOR
+  CONSUMIVEL_FLUIDO_FREIO
+  CONSUMIVEL_FLUIDO_ARREFECIMENTO
+
+  // Itens de contato/ergonomia (moto)
+  MANOPLA
+  PEDALEIRA
+}
+
+model auth {
+  uuid             String             @id @unique @default(uuid())
+  nome             String
+  codigo_registro  String             @unique
+  email            String
+  senha            String?
+  status           Boolean            @default(true)
+  tipo             Tipo_User          @default(USER)
+  otp_enviado        String?
+  otp_update         DateTime?
+  pessoa           pessoa[]
+  operador_cliente operador_cliente[]
+  operador         operador[]
+  veiculo_cliente  veiculo_cliente[]
+}
+
+model pessoa {
+  uuid            String  @id @unique
+  nome_completo   String
+  data_nascimento String
+  cpf             String
+  numero_celular  String
+  email           String
+  cep             String
+  foto            String?
+  auth            auth    @relation(fields: [uuid], references: [uuid])
+}
+
+model operador {
+  uuid                   String             @id @unique
+  redes                  Json?
+  numero_celular_empresa String
+  logo                   String?
+  cnpj                   String             @unique
+  status                 Boolean            @default(true)
+  auth                   auth               @relation(fields: [uuid], references: [uuid])
+  operador_cliente       operador_cliente[]
+  veiculo                veiculo[]
+  peca                   peca[]
+}
+
+model operador_cliente {
+  id            Int      @id @unique @default(autoincrement())
+  cliente_uuid  String
+  operador_uuid String
+  cliente       auth     @relation(fields: [cliente_uuid], references: [uuid])
+  operador      operador @relation(fields: [operador_uuid], references: [uuid])
+}
+
+model veiculo_cliente {
+  id           Int     @id @unique @default(autoincrement())
+  cliente_uuid String
+  veiculo_uuid String
+  cliente      auth    @relation(fields: [cliente_uuid], references: [uuid])
+  veiculo      veiculo @relation(fields: [veiculo_uuid], references: [uuid])
+}
+
+model veiculo {
+  uuid             String            @id @unique @default(uuid())
+  modelo           String
+  tipo             Tipo_veiculo
+  km               Float             @default(0)
+  valor_manutencao Float             @default(0)
+  valor_seguro     Float             @default(0)
+  valor_aluguel    Float             @default(0)
+  placa_veicular   String?
+  renavam          String?
+  chassi           String?
+  foto             String?
+  status           Status_veiculo    @default(LIVRE)
+  operador_uuid    String
+  operador         operador          @relation(fields: [operador_uuid], references: [uuid])
+  veiculo_peca     veiculo_peca[]
+  veiculo_cliente  veiculo_cliente[]
+}
+
+model peca {
+  id            Int            @id @unique @default(autoincrement())
+  tipo          Tipo_Peca
+  marca         String
+  km_troca      Float
+  preco_medio   Float
+  km_aviso      Float
+  operador_uuid String
+  logo          String?
+  veiculo_peca  veiculo_peca[]
+  operador      operador       @relation(fields: [operador_uuid], references: [uuid])
+}
+
+model veiculo_peca {
+  id                Int       @id @unique @default(autoincrement())
+  veiculo_uuid      String
+  peca_id           Int
+  km_registro       Float
+  data_ultima_troca DateTime?
+  veiculo           veiculo   @relation(fields: [veiculo_uuid], references: [uuid])
+  peca              peca      @relation(fields: [peca_id], references: [id])
+}

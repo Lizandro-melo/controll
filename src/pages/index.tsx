@@ -71,7 +71,7 @@ export default function Dash() {
       </div>
       <div className="relative border item-resume p-10 rounded-lg flex flex-col justify-center items-center gap-3">
         <FiAlertTriangle className="stroke-stone-500 w-[30px] h-[30px]" />
-        <div className="flex flex-col items-center">
+        <div className="flex flex-col items-center text-center">
           <span className="font-semibold">Nenhum alerta ativo</span>
           <span className="font-semibold text-sm text-stone-400">
             Todas as peças estão dentro do prazo de manutenção
