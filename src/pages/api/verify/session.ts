@@ -1,15 +1,10 @@
 import { response } from "@/utils/types";
 import type { NextApiRequest, NextApiResponse } from "next";
-import { z } from "zod";
-import { isCPF } from "validation-br";
-import { log } from "console";
 import {
-  consult_pessoa_uuid_by_cpf,
   consult_tipo_user_by_uuid,
   consult_uuid_auth_by_session,
 } from "@/utils/server/service/consult";
-import { generate_session_by_uuid } from "@/utils/server/service/generate";
-import Router from "next/router";
+
 
 export default async function session(
   req: NextApiRequest,

@@ -4,9 +4,9 @@ import { formatInputLogin } from "@/utils/lib/utils";
 import { ContextAuth, LoginData } from "@/utils/provider/provider_auth";
 import Image from "next/image";
 import Link from "next/link";
-import { FormEvent, FormEventHandler, useContext } from "react";
+import { useContext } from "react";
 import { useForm } from "react-hook-form";
-import axios from "axios";
+
 
 export default function Auth() {
   const {

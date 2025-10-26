@@ -133,6 +133,7 @@ model historico_senha {
 
 model pessoa {
   uuid               String        @id @unique
+  nome_completo      String?
   num_cpf            String        @unique
   num_cnpj           String?
   data_nascimento    DateTime

@@ -4,7 +4,11 @@ import { Input } from "@/utils/components/ui/input";
 import { HiOutlineFilter } from "react-icons/hi";
 import { GoSearch } from "react-icons/go";
 import { FC, useState } from "react";
-import { Dialog, DialogContent, DialogTitle } from "@/utils/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogTitle,
+} from "@/utils/components/ui/dialog";
 import LabelInput from "@/utils/components/ui/label-input";
 import { useForm } from "react-hook-form";
 import {
@@ -28,7 +32,7 @@ export const pecas_dev: peca[] = [
     km_troca: 20000,
     preco_medio: 450,
     km_aviso: 18000,
-    operador_uuid: "uuid_operador_mock",
+
     logo: "",
   },
   {
@@ -38,7 +42,7 @@ export const pecas_dev: peca[] = [
     km_troca: 15000,
     preco_medio: 120,
     km_aviso: 13000,
-    operador_uuid: "uuid_operador_mock",
+
     logo: "",
   },
 ];

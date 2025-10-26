@@ -1,7 +1,5 @@
 import PRISMA from "@/utils/server/db";
-import { auth, pessoa } from "@prisma/client";
 import type { NextApiRequest, NextApiResponse } from "next";
-import { setCookie } from "nookies";
 import { hash } from "bcrypt";
 import { SaltRounds } from "@/utils/server/crypt";
 import moment from "moment";

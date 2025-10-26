@@ -4,8 +4,12 @@ import { FiPlus } from "react-icons/fi";
 import { Input } from "@/utils/components/ui/input";
 import { HiOutlineFilter } from "react-icons/hi";
 import { GoSearch } from "react-icons/go";
-import { FC, useContext, useState } from "react";
-import { Dialog, DialogContent, DialogTitle } from "@/utils/components/ui/dialog";
+import { FC, useState } from "react";
+import {
+  Dialog,
+  DialogContent,
+  DialogTitle,
+} from "@/utils/components/ui/dialog";
 import LabelInput from "@/utils/components/ui/label-input";
 import { useForm } from "react-hook-form";
 import {
@@ -20,9 +24,7 @@ import { veiculo } from "@prisma/client";
 import { PiMotorcycle } from "react-icons/pi";
 import Router from "next/router";
 import { DialogProps } from "@radix-ui/react-dialog";
-import { register } from "module";
 import { useSearchParams } from "next/navigation";
-import { ContextAuth } from "@/utils/provider/provider_auth";
 import { cn } from "@/utils/lib/utils";
 
 export const veiculos_dev: veiculo[] = [
@@ -38,7 +40,6 @@ export const veiculos_dev: veiculo[] = [
     foto: "",
     renavam: "01234567891",
     uuid: "v001",
-    operador_uuid: "op001",
     status: "ALUGADO",
   },
   {
@@ -53,7 +54,7 @@ export const veiculos_dev: veiculo[] = [
     foto: "",
     renavam: "01123459873",
     uuid: "v002",
-    operador_uuid: "op002",
+
     status: "LIVRE",
   },
   {
@@ -68,7 +69,7 @@ export const veiculos_dev: veiculo[] = [
     foto: "",
     renavam: "00987654321",
     uuid: "v003",
-    operador_uuid: "op003",
+
     status: "ALUGADO",
   },
   {
@@ -83,7 +84,7 @@ export const veiculos_dev: veiculo[] = [
     foto: "",
     renavam: "00891236754",
     uuid: "v004",
-    operador_uuid: "op004",
+
     status: "LIVRE",
   },
   {
@@ -98,7 +99,6 @@ export const veiculos_dev: veiculo[] = [
     foto: "",
     renavam: "00784569231",
     uuid: "v005",
-    operador_uuid: "op005",
     status: "LIVRE",
   },
   {
@@ -113,7 +113,7 @@ export const veiculos_dev: veiculo[] = [
     foto: "",
     renavam: "00999887766",
     uuid: "v006",
-    operador_uuid: "op006",
+
     status: "ALUGADO",
   },
   {
@@ -128,7 +128,6 @@ export const veiculos_dev: veiculo[] = [
     foto: "",
     renavam: "01354789900",
     uuid: "v007",
-    operador_uuid: "op007",
     status: "LIVRE",
   },
   {
@@ -143,7 +142,6 @@ export const veiculos_dev: veiculo[] = [
     foto: "",
     renavam: "01002345789",
     uuid: "v008",
-    operador_uuid: "op008",
     status: "ALUGADO",
   },
 ];

@@ -1,30 +1,10 @@
 import {
   createContext,
-  Dispatch,
   ReactNode,
-  SetStateAction,
-  useCallback,
-  useContext,
-  useEffect,
-  useLayoutEffect,
   useState,
 } from "react";
-import Router from "next/router";
-import { Montserrat } from "next/font/google";
-import { setCookie, parseCookies, destroyCookie } from "nookies";
-
-import Image from "next/image";
-import Central from "@/utils/components/ui/central";
-import Nav from "@/utils/components/ui/nav";
-import { useSearchParams } from "next/navigation";
-import axios from "axios";
 import { AiOutlineLoading } from "react-icons/ai";
 import { cn } from "../lib/utils";
-
-const montFont = Montserrat({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
 
 export type LoginData = {
   login: string;

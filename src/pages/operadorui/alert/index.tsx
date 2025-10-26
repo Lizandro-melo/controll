@@ -4,14 +4,15 @@ import { Input } from "@/utils/components/ui/input";
 import { HiOutlineFilter } from "react-icons/hi";
 import { GoSearch } from "react-icons/go";
 import { FC, useState } from "react";
-import { Dialog, DialogContent, DialogTitle } from "@/utils/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogTitle,
+} from "@/utils/components/ui/dialog";
 import LabelInput from "@/utils/components/ui/label-input";
 import { useForm } from "react-hook-form";
 import { Label } from "@/utils/components/ui/label";
 import { cn } from "@/utils/lib/utils";
-import { LuCar } from "react-icons/lu";
-import { PiTire } from "react-icons/pi";
-
 export type Alerta = {
   uuid: string;
   tipo: string;
@@ -153,8 +154,8 @@ function ShowAlerta({ alerta }: { alerta: Alerta }) {
     alerta.nivel === "ALTO"
       ? "border-red-600 text-red-600"
       : alerta.nivel === "MEDIO"
-      ? "border-yellow-500 text-yellow-600"
-      : "border-green-600 text-green-600";
+        ? "border-yellow-500 text-yellow-600"
+        : "border-green-600 text-green-600";
 
   return (
     <div
