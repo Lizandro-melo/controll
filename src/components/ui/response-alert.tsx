@@ -10,8 +10,8 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
-import { cn } from "@/lib/utils";
+} from "@/utils/components/ui/alert-dialog";
+import { cn } from "@/utils/lib/utils";
 
 export default function ResponseAlert() {
   const searchParams = useSearchParams();

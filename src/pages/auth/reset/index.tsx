@@ -1,7 +1,7 @@
-import { Button } from "@/components/ui/button";
-import LabelInput from "@/components/ui/label-input";
-import { formatInputLogin } from "@/lib/utils";
-import { ContextAuth, LoginData } from "@/provider/provider_auth";
+import { Button } from "@/utils/components/ui/button";
+import LabelInput from "@/utils/components/ui/label-input";
+import { formatInputLogin } from "@/utils/lib/utils";
+import { ContextAuth, LoginData } from "@/utils/provider/provider_auth";
 import Image from "next/image";
 import { FormEvent, FormEventHandler, useContext, useState } from "react";
 import { useForm } from "react-hook-form";
@@ -10,7 +10,7 @@ import {
   InputOTPGroup,
   InputOTPSeparator,
   InputOTPSlot,
-} from "@/components/ui/input-otp";
+} from "@/utils/components/ui/input-otp";
 import Router from "next/router";
 
 export default function Reset() {

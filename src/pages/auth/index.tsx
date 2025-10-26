@@ -1,11 +1,12 @@
-import { Button } from "@/components/ui/button";
-import LabelInput from "@/components/ui/label-input";
-import { formatInputLogin } from "@/lib/utils";
-import { ContextAuth, LoginData } from "@/provider/provider_auth";
+import { Button } from "@/utils/components/ui/button";
+import LabelInput from "@/utils/components/ui/label-input";
+import { formatInputLogin } from "@/utils/lib/utils";
+import { ContextAuth, LoginData } from "@/utils/provider/provider_auth";
 import Image from "next/image";
 import Link from "next/link";
 import { FormEvent, FormEventHandler, useContext } from "react";
 import { useForm } from "react-hook-form";
+import axios from "axios";
 
 export default function Auth() {
   const {
@@ -63,7 +64,7 @@ export default function Auth() {
         </div>
       </div>
       <div>
-        <Button type="submit" className="px-10 text-sm">
+        <Button type="submit" className="px-10 text-sm cursor-pointer">
           Entrar
         </Button>
       </div>

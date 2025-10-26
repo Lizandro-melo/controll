@@ -15,179 +15,167 @@ datasource db {
 
 enum Tipo_User {
   MASTER
-  USER
+  ADMIN
+  OPERADOR
+  CLIENTE
 }
 
-enum Status_veiculo {
+enum redes {
+  WHATSAPP
+  TELEGRAM
+  FACEBOOK
+  LINKEDIN
+  URL
+}
+
+enum status_veiculo {
   LIVRE
   ALUGADO
 }
 
-enum Tipo_veiculo {
+enum tipo_veiculo {
   MOTO
   CARRO
 }
 
-enum Tipo_Peca {
-  // Pneus
+enum tipo_peca {
   PNEU
 
-  // Freios
   PASTILHA_FREIO
   DISCO_FREIO
   SAPATA_FREIO
 
-  // Embreagem (carro/moto)
   EMBREAGEM_PLATO
   EMBREAGEM_DISCO
   EMBREAGEM_ROLAMENTO
   MOLAS_EMBREAGEM
 
-  // Transmissão de moto
   CORRENTE_TRANSMISSAO
   COROA_TRANSMISSAO
   PINHAO_TRANSMISSAO
 
-  // Correias (carro)
   CORREIA_DENTADA
   CORREIA_ALTERNADOR
   CORREIA_ACESSORIOS
 
-  // Ignição
   VELA_IGNICAO
 
-  // Suspensão
   AMORTECEDOR
   AMORTECEDOR_DIANTEIRO
   AMORTECEDOR_TRASEIRO
   BUCHA_SUSPENSAO
   PIVO_SUSPENSAO
 
-  // Direção
   TERMINAL_DIRECAO
   ROLAMENTO_DIRECAO
 
-  // Montagem/Powertrain
   COXIM_MOTOR
   COXIM_CAMBIO
 
-  // Elétrica
   BATERIA
   ESCOVA_ALTERNADOR
   ESCOVA_MOTOR_PARTIDA
   LAMPADA
 
-  // Rolamentos
   ROLAMENTO_RODA
 
-  // Cabos (moto)
   CABO_EMBREAGEM
   CABO_ACELERADOR
   CABO_FREIO
 
-  // Filtros
   FILTRO_AR
   FILTRO_OLEO
   FILTRO_COMBUSTIVEL
   FILTRO_CABINE
 
-  // Consumíveis (fluídos)
   CONSUMIVEL_OLEO_MOTOR
   CONSUMIVEL_FLUIDO_FREIO
   CONSUMIVEL_FLUIDO_ARREFECIMENTO
 
-  // Itens de contato/ergonomia (moto)
   MANOPLA
   PEDALEIRA
 }
 
+//session
 model auth {
-  uuid             String             @id @unique @default(uuid())
-  nome             String
-  codigo_registro  String             @unique
-  email            String
-  senha            String?
-  status           Boolean            @default(true)
-  tipo             Tipo_User          @default(USER)
-  otp_enviado        String?
-  otp_update         DateTime?
-  pessoa           pessoa[]
-  operador_cliente operador_cliente[]
-  operador         operador[]
-  veiculo_cliente  veiculo_cliente[]
+  uuid   String    @id @unique @default(uuid())
+  role   Tipo_User
+  status Boolean   @default(true)
+
+  pessoa            pessoa?
+  historico_session historico_session[]
+  historico_otp     historico_otp[]
+  historico_senha   historico_senha[]
+}
+
+model historico_session {
+  uuid         String   @id @unique @default(uuid())
+  uuid_auth    String
+  record_login DateTime @default(now())
+  expira_time  DateTime
+  auth         auth     @relation(fields: [uuid_auth], references: [uuid])
+}
+
+model historico_otp {
+  uuid          String   @id
+  code_otp      String
+  record_create DateTime @default(now())
+  auth          auth     @relation(fields: [uuid], references: [uuid])
+}
+
+model historico_senha {
+  uuid          String   @id
+  senha         String
+  record_update DateTime @default(now())
+  status        Boolean  @default(true)
+  auth          auth     @relation(fields: [uuid], references: [uuid])
 }
 
 model pessoa {
-  uuid            String  @id @unique
-  nome_completo   String
-  data_nascimento String
-  cpf             String
-  numero_celular  String
-  email           String
-  cep             String
-  foto            String?
-  auth            auth    @relation(fields: [uuid], references: [uuid])
+  uuid               String        @id @unique
+  num_cpf            String        @unique
+  num_cnpj           String?
+  data_nascimento    DateTime
+  numero_cel         String        @unique
+  correio_eletronico String        @unique
+  codigo_postal      String
+  numero_residencial String
+  auth               auth          @relation(fields: [uuid], references: [uuid])
+  rede_social        rede_social[]
 }
 
-model operador {
-  uuid                   String             @id @unique
-  redes                  Json?
-  numero_celular_empresa String
-  logo                   String?
-  cnpj                   String             @unique
-  status                 Boolean            @default(true)
-  auth                   auth               @relation(fields: [uuid], references: [uuid])
-  operador_cliente       operador_cliente[]
-  veiculo                veiculo[]
-  peca                   peca[]
-}
-
-model operador_cliente {
-  id            Int      @id @unique @default(autoincrement())
-  cliente_uuid  String
-  operador_uuid String
-  cliente       auth     @relation(fields: [cliente_uuid], references: [uuid])
-  operador      operador @relation(fields: [operador_uuid], references: [uuid])
-}
-
-model veiculo_cliente {
-  id           Int     @id @unique @default(autoincrement())
-  cliente_uuid String
-  veiculo_uuid String
-  cliente      auth    @relation(fields: [cliente_uuid], references: [uuid])
-  veiculo      veiculo @relation(fields: [veiculo_uuid], references: [uuid])
+model rede_social {
+  id          Int    @id @unique @default(autoincrement())
+  uuid_pessoa String
+  url         String
+  pessoa      pessoa @relation(fields: [uuid_pessoa], references: [uuid])
 }
 
 model veiculo {
-  uuid             String            @id @unique @default(uuid())
+  uuid             String         @id @unique @default(uuid())
   modelo           String
-  tipo             Tipo_veiculo
-  km               Float             @default(0)
-  valor_manutencao Float             @default(0)
-  valor_seguro     Float             @default(0)
-  valor_aluguel    Float             @default(0)
+  tipo             tipo_veiculo
+  km               Float          @default(0)
+  valor_manutencao Float          @default(0)
+  valor_seguro     Float          @default(0)
+  valor_aluguel    Float          @default(0)
   placa_veicular   String?
   renavam          String?
   chassi           String?
   foto             String?
-  status           Status_veiculo    @default(LIVRE)
-  operador_uuid    String
-  operador         operador          @relation(fields: [operador_uuid], references: [uuid])
+  status           status_veiculo @default(LIVRE)
   veiculo_peca     veiculo_peca[]
-  veiculo_cliente  veiculo_cliente[]
 }
 
 model peca {
-  id            Int            @id @unique @default(autoincrement())
-  tipo          Tipo_Peca
-  marca         String
-  km_troca      Float
-  preco_medio   Float
-  km_aviso      Float
-  operador_uuid String
-  logo          String?
-  veiculo_peca  veiculo_peca[]
-  operador      operador       @relation(fields: [operador_uuid], references: [uuid])
+  id           Int            @id @unique @default(autoincrement())
+  tipo         tipo_peca
+  marca        String
+  km_troca     Float
+  preco_medio  Float
+  km_aviso     Float
+  logo         String?
+  veiculo_peca veiculo_peca[]
 }
 
 model veiculo_peca {
