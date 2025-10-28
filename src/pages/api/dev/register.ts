@@ -1,8 +1,8 @@
-import PRISMA from "@/utils/server/db";
+import { PRISMA } from "@/utils/server/db";
 import type { NextApiRequest, NextApiResponse } from "next";
 import { hash } from "bcrypt";
-import { SaltRounds } from "@/utils/server/crypt";
 import moment from "moment";
+import { SALT_ROUNDS } from "@/utils/server/constants";
 
 type req_register_dev = {
   num_cpf: string;
@@ -26,11 +26,11 @@ export default async function handler(
   });
   await PRISMA.historico_senha.create({
     data: {
-      senha: await hash(data.senha, SaltRounds),
+      senha: await hash(data.senha, SALT_ROUNDS),
       uuid: auth_criado.uuid,
     },
   });
-  const pessoa_criada = await PRISMA.pessoa.create({
+  await PRISMA.pessoa.create({
     data: {
       num_cpf: data.num_cpf,
       data_nascimento: moment(data.data_nascimento).toDate(),

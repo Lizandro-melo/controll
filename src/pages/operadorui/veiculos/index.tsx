@@ -1,7 +1,7 @@
-import { Button } from "@/utils/components/ui/button";
+import { Button } from "@/utils/front/components/ui/button";
 import { LuCar } from "react-icons/lu";
 import { FiPlus } from "react-icons/fi";
-import { Input } from "@/utils/components/ui/input";
+import { Input } from "@/utils/front/components/ui/input";
 import { HiOutlineFilter } from "react-icons/hi";
 import { GoSearch } from "react-icons/go";
 import { FC, useState } from "react";
@@ -9,8 +9,8 @@ import {
   Dialog,
   DialogContent,
   DialogTitle,
-} from "@/utils/components/ui/dialog";
-import LabelInput from "@/utils/components/ui/label-input";
+} from "@/utils/front/components/ui/dialog";
+import LabelInput from "@/utils/front/components/ui/label-input";
 import { useForm } from "react-hook-form";
 import {
   Select,
@@ -18,14 +18,14 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/utils/components/ui/select";
-import { Label } from "@/utils/components/ui/label";
+} from "@/utils/front/components/ui/select";
+import { Label } from "@/utils/front/components/ui/label";
 import { veiculo } from "@prisma/client";
 import { PiMotorcycle } from "react-icons/pi";
 import Router from "next/router";
 import { DialogProps } from "@radix-ui/react-dialog";
 import { useSearchParams } from "next/navigation";
-import { cn } from "@/utils/lib/utils";
+import { cn } from "@/utils/front/lib/utils";
 
 export const veiculos_dev: veiculo[] = [
   {

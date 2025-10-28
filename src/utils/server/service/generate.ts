@@ -1,8 +1,8 @@
-import PRISMA from "../db";
+import { PRISMA } from "../db";
 import moment from "moment-timezone";
 import { compare } from "bcrypt";
 import { consult_senhaCrypt_by_uuid, consult_session_by_uuid } from "./consult";
-import { days_expire_session } from "../session_exp";
+import { DAYS_EXPIRE_SESSION } from "../constants";
 import { log } from "console";
 
 export const generate_session_by_uuid = async (
@@ -19,7 +19,7 @@ export const generate_session_by_uuid = async (
           uuid_auth: uuid,
           expira_time: moment()
             .tz("America/Sao_Paulo")
-            .add(days_expire_session, "d")
+            .add(DAYS_EXPIRE_SESSION, "d")
             .format(),
         },
       })

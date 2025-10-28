@@ -1,6 +1,6 @@
-import { Button } from "@/utils/components/ui/button";
+import { Button } from "@/utils/front/components/ui/button";
 import { FiAlertTriangle, FiPlus } from "react-icons/fi";
-import { Input } from "@/utils/components/ui/input";
+import { Input } from "@/utils/front/components/ui/input";
 import { HiOutlineFilter } from "react-icons/hi";
 import { GoSearch } from "react-icons/go";
 import { FC, useState } from "react";
@@ -8,11 +8,11 @@ import {
   Dialog,
   DialogContent,
   DialogTitle,
-} from "@/utils/components/ui/dialog";
-import LabelInput from "@/utils/components/ui/label-input";
+} from "@/utils/front/components/ui/dialog";
+import LabelInput from "@/utils/front/components/ui/label-input";
 import { useForm } from "react-hook-form";
-import { Label } from "@/utils/components/ui/label";
-import { cn } from "@/utils/lib/utils";
+import { Label } from "@/utils/front/components/ui/label";
+import { cn } from "@/utils/front/lib/utils";
 export type Alerta = {
   uuid: string;
   tipo: string;

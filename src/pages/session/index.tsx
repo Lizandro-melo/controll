@@ -1,5 +1,5 @@
-import { ContextAuth } from "@/utils/provider/provider_auth";
-import { ContextLoading } from "@/utils/provider/provider_loading";
+import { ContextAuth } from "@/utils/front/provider/provider_auth";
+import { ContextLoading } from "@/utils/front/provider/provider_loading";
 import axios from "axios";
 import Router from "next/router";
 import { parseCookies } from "nookies";

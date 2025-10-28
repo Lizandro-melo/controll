@@ -1,12 +1,12 @@
 import { auth, pessoa, Tipo_User } from "@prisma/client";
-import PRISMA from "../db";
+import { PRISMA } from "../db";
 import { log } from "console";
 import moment from "moment-timezone";
-import { days_expire_session } from "../session_exp";
+import { DAYS_EXPIRE_SESSION } from "../constants";
 
 export const consult_pessoa_uuid_by_cpf = async (
   cpf: string,
-): Promise<string | undefined> => {
+): Promise<string> => {
   return await PRISMA.pessoa
     .findUniqueOrThrow({ where: { num_cpf: cpf } })
     .then((response) => response?.uuid)
@@ -47,7 +47,7 @@ export const consult_session_by_uuid = async (
             moment()
               .tz("America/Sao_Paulo")
               .diff(moment(log.expira_time).tz("America/Sao_Paulo"), "d") <
-            days_expire_session,
+            DAYS_EXPIRE_SESSION,
         )?.uuid,
     );
 };
@@ -56,7 +56,7 @@ export const consult_uuid_auth_by_session = async (
   session: string,
 ): Promise<string | undefined> => {
   return await PRISMA.historico_session
-    .findUnique({
+    .findUniqueOrThrow({
       where: {
         uuid: session,
       },
@@ -66,9 +66,12 @@ export const consult_uuid_auth_by_session = async (
         moment()
           .tz("America/Sao_Paulo")
           .diff(moment(response?.expira_time).tz("America/Sao_Paulo"), "d") <
-        days_expire_session
+        DAYS_EXPIRE_SESSION
       )
         return response?.uuid_auth;
+    })
+    .catch(() => {
+      throw new Error("Sessão Invalida");
     });
 };
 
@@ -83,6 +86,6 @@ export const consult_tipo_user_by_uuid = async (
     })
     .then((response) => response?.role)
     .catch(() => {
-      throw new Error("/auth");
+      throw new Error("/");
     });
 };
