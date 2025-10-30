@@ -1,40 +1,154 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/pages/api-reference/create-next-app).
+# 🚗 Sistema de Gestão de Frotas
 
-## Getting Started
+Um sistema web desenvolvido com **Next.js**, **TypeScript** e **Prisma ORM** para **gerenciamento de veículos, clientes e manutenção de frota**.  
+O projeto inclui autenticação, dashboard analítico e CRUDs de veículos com foco em usabilidade e interface moderna.
 
-First, run the development server:
+---
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+## 🧩 Funcionalidades Principais
+
+### 🔐 Autenticação
+- Login por CPF e senha com máscara automática.
+- Controle de sessão via cookies (`nookies`).
+- Redirecionamento automático conforme o status de autenticação.
+- Validação e feedback de erro com alertas dinâmicos.
+
+### 📊 Dashboard
+- Resumo de indicadores da frota:
+  - Total de veículos
+  - Peças cadastradas
+  - Clientes ativos
+  - Receita potencial
+- Bloco de **alertas de manutenção**.
+- Cards de resumo financeiro e status da frota.
+
+### 🚘 Gestão de Veículos
+- Listagem de veículos com dados principais (modelo, placa, KM, status).
+- Categorização por tipo (`CARRO` | `MOTO`).
+- Exibição dos custos de **aluguel**, **manutenção** e **seguro**.
+- Formulário de cadastro com:
+  - Modelo, tipo, quilometragem, placa e seguro.
+  - Modal interativo para novo veículo.
+  - Integração com `react-hook-form`.
+
+### 🧭 Estrutura de Navegação
+- Interface organizada em **layout responsivo** com barra lateral.
+- Páginas principais:
+  - `/auth` – Login do sistema.
+  - `/auth/resetpass` – Recuperação de senha.
+  - `/` – Dashboard principal.
+  - `/veiculos` – Gestão de veículos.
+
+---
+
+## ⚙️ Tecnologias Utilizadas
+
+| Categoria | Tecnologias |
+|------------|--------------|
+| Framework | **Next.js 14**, **React 18** |
+| Linguagem | **TypeScript** |
+| Banco de Dados | **Prisma ORM** |
+| Estilização | **TailwindCSS**, **Shadcn UI** |
+| Autenticação | **Cookies (nookies)** |
+| Formulários | **React Hook Form** |
+| Ícones | **React Icons** |
+| Tipografia | **Google Fonts (Montserrat)** |
+
+---
+
+## 🏗️ Estrutura do Projeto
+
+```
+📁 src
+├── components/
+│   ├── ui/
+│   │   ├── button.tsx
+│   │   ├── input.tsx
+│   │   ├── label-input.tsx
+│   │   ├── dialog.tsx
+│   │   ├── nav.tsx
+│   │   ├── central.tsx
+│   │   └── response-alert.tsx
+│
+├── pages/
+│   ├── index.tsx               # Dashboard principal
+│   ├── veiculos/index.tsx      # Gestão de veículos
+│   └── auth/
+│       ├── index.tsx           # Tela de login
+│       └── resetpass.tsx       # Redefinição de senha
+│
+├── provider/
+│   └── provider_auth.tsx       # Contexto de autenticação
+│
+├── prisma/
+│   └── schema.prisma           # Modelos e schema do banco
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+---
 
-You can start editing the page by modifying `pages/index.tsx`. The page auto-updates as you edit the file.
+## 🚀 Como Executar o Projeto
 
-[API routes](https://nextjs.org/docs/pages/building-your-application/routing/api-routes) can be accessed on [http://localhost:3000/api/hello](http://localhost:3000/api/hello). This endpoint can be edited in `pages/api/hello.ts`.
+### 1️⃣ Clonar o repositório
+```bash
+git clone https://github.com/seu-usuario/nome-do-repositorio.git
+cd nome-do-repositorio
+```
 
-The `pages/api` directory is mapped to `/api/*`. Files in this directory are treated as [API routes](https://nextjs.org/docs/pages/building-your-application/routing/api-routes) instead of React pages.
+### 2️⃣ Instalar dependências
+```bash
+pnpm i
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/pages/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### 3️⃣ Configurar o banco de dados
+Edite o arquivo `.env` com sua URL do banco de dados e execute:
+```bash
+pnpx prisma migrate dev
+```
 
-## Learn More
+### 4️⃣ Rodar o projeto
+```bash
+pnpm run dev
+```
 
-To learn more about Next.js, take a look at the following resources:
+Acesse em: [http://localhost:3000](http://localhost:3000)
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn-pages-router) - an interactive Next.js tutorial.
+---
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## 👤 Usuário de Desenvolvimento
 
-## Deploy on Vercel
+Durante o desenvolvimento, o projeto utiliza um usuário padrão para testes:
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+```ts
+login: "beta"
+senha: "admin"
+```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/pages/building-your-application/deploying) for more details.
+---
+
+## 🧠 Próximos Passos
+- [ ] Conectar o backend real com Prisma e API REST.
+- [ ] Implementar cadastro de clientes e alertas de manutenção.
+- [ ] Adicionar autenticação JWT.
+- [ ] Dashboard dinâmico com gráficos (Recharts).
+- [ ] Testes unitários e integração com CI/CD.
+
+---
+
+## Imagens
+
+<p align="center">
+  <img src="https://github.com/seu-usuario/seu-repositorio/assets/12345678/dashboard-preview.png" width="600" alt="Login Preview">
+</p>
+
+<p align="center">
+  <img src="https://github.com/seu-usuario/seu-repositorio/assets/12345678/dashboard-preview.png" width="600" alt="Dashboard Preview">
+</p>
+
+<p align="center">
+  <img src="https://github.com/seu-usuario/seu-repositorio/assets/12345678/dashboard-preview.png" width="600" alt="Veiculos Preview">
+</p>
+
+<p align="center">
+  <img src="https://github.com/seu-usuario/seu-repositorio/assets/12345678/dashboard-preview.png" width="600" alt="Detalhes Preview">
+</p>
+
