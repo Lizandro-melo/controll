@@ -137,18 +137,18 @@ senha: "admin"
 ## Imagens
 
 <p align="center">
-  <img src="https://github.com/seu-usuario/seu-repositorio/assets/12345678/dashboard-preview.png" width="600" alt="Login Preview">
+  <img src="https://github.com/Lizandro-melo/controll/blob/master/public/Login.jpg" width="600" alt="Login Preview">
 </p>
 
 <p align="center">
-  <img src="https://github.com/seu-usuario/seu-repositorio/assets/12345678/dashboard-preview.png" width="600" alt="Dashboard Preview">
+  <img src="https://github.com/Lizandro-melo/controll/blob/master/public/dash.jpg" width="600" alt="Dashboard Preview">
 </p>
 
 <p align="center">
-  <img src="https://github.com/seu-usuario/seu-repositorio/assets/12345678/dashboard-preview.png" width="600" alt="Veiculos Preview">
+  <img src="https://github.com/Lizandro-melo/controll/blob/master/public/veiculos.jpg" width="600" alt="Veiculos Preview">
 </p>
 
 <p align="center">
-  <img src="https://github.com/seu-usuario/seu-repositorio/assets/12345678/dashboard-preview.png" width="600" alt="Detalhes Preview">
+  <img src="https://github.com/Lizandro-melo/controll/blob/master/public/detalhes.jpg" width="600" alt="Detalhes Preview">
 </p>
 
