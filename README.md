@@ -90,8 +90,7 @@ O projeto inclui autenticação, dashboard analítico e CRUDs de veículos com f
 
 ### 1️⃣ Clonar o repositório
 ```bash
-git clone https://github.com/seu-usuario/nome-do-repositorio.git
-cd nome-do-repositorio
+git clone https://github.com/Lizandro-melo/controll.git
 ```
 
 ### 2️⃣ Instalar dependências
