@@ -17,7 +17,6 @@ enum Tipo_User {
   MASTER
   ADMIN
   OPERADOR
-  CLIENTE
 }
 
 enum redes {
@@ -96,16 +95,47 @@ enum tipo_peca {
   PEDALEIRA
 }
 
+//register
+model register_token {
+  uuid      String    @id @unique @default(uuid())
+  status    Boolean   @default(true)
+  data_util DateTime?
+}
+
 //session
 model auth {
-  uuid   String    @id @unique @default(uuid())
-  role   Tipo_User
-  status Boolean   @default(true)
+  uuid     String    @id @unique @default(uuid())
+  role     Tipo_User @default(OPERADOR)
+  status   Boolean   @default(true)
+  id_sub   String?
+  id_asaas String?
 
   pessoa            pessoa?
   historico_session historico_session[]
   historico_otp     historico_otp[]
   historico_senha   historico_senha[]
+  veiculo_operador  veiculo_operador[]
+  peca_operador     peca_operador[]
+  operador_cliente  operador_cliente[]
+}
+
+model cliente {
+  uuid              String             @id @unique @default(uuid())
+  uuid_pessoa       String
+  pessoa            pessoa             @relation(fields: [uuid_pessoa], references: [uuid])
+  data_contrato     DateTime?
+  data_fim_contrato DateTime?
+  operador_cliente  operador_cliente[]
+  veiculo           veiculo[]
+}
+
+model operador_cliente {
+  id            Int     @id @default(autoincrement())
+  uuid_operador String
+  uuid_cliente  String
+  status        Boolean @default(true)
+  cliente       cliente @relation(fields: [uuid_cliente], references: [uuid])
+  auth          auth    @relation(fields: [uuid_operador], references: [uuid])
 }
 
 model historico_session {
@@ -132,17 +162,35 @@ model historico_senha {
 }
 
 model pessoa {
-  uuid               String        @id @unique
-  nome_completo      String?
-  num_cpf            String        @unique
+  uuid               String            @id @unique
+  nome_completo      String
+  num_cpf            String            @unique
   num_cnpj           String?
-  data_nascimento    DateTime
-  numero_cel         String        @unique
-  correio_eletronico String        @unique
+  data_nascimento    DateTime?
+  correio_eletronico String            @unique
+  observacao         String?
+  auth               auth              @relation(fields: [uuid], references: [uuid])
+  rede_social        rede_social[]
+  cliente            cliente[]
+  pessoa_telefone    pessoa_telefone[]
+  pessoa_endereco    pessoa_endereco[]
+}
+
+model pessoa_telefone {
+  id          Int     @id @default(autoincrement())
+  num_cel     String  @unique
+  status      Boolean @default(true)
+  uuid_pessoa String
+  pessoa      pessoa  @relation(fields: [uuid_pessoa], references: [uuid])
+}
+
+model pessoa_endereco {
+  id                 Int     @id @default(autoincrement())
   codigo_postal      String
   numero_residencial String
-  auth               auth          @relation(fields: [uuid], references: [uuid])
-  rede_social        rede_social[]
+  status             Boolean @default(true)
+  uuid_pessoa        String
+  pessoa             pessoa  @relation(fields: [uuid_pessoa], references: [uuid])
 }
 
 model rede_social {
@@ -152,31 +200,51 @@ model rede_social {
   pessoa      pessoa @relation(fields: [uuid_pessoa], references: [uuid])
 }
 
+model veiculo_operador {
+  id           Int     @id @default(autoincrement())
+  uuid_auth    String
+  uuid_veiculo String
+  auth         auth    @relation(fields: [uuid_auth], references: [uuid])
+  veiculo      veiculo @relation(fields: [uuid_veiculo], references: [uuid])
+}
+
 model veiculo {
-  uuid             String         @id @unique @default(uuid())
+  uuid             String             @id @unique @default(uuid())
   modelo           String
+  marca            String
   tipo             tipo_veiculo
-  km               Float          @default(0)
-  valor_manutencao Float          @default(0)
-  valor_seguro     Float          @default(0)
-  valor_aluguel    Float          @default(0)
+  km               Float              @default(0)
+  valor_manutencao Float?             @default(0)
+  valor_seguro     Float              @default(0)
+  valor_aluguel    Float              @default(0)
   placa_veicular   String?
   renavam          String?
   chassi           String?
-  foto             String?
-  status           status_veiculo @default(LIVRE)
+  status           status_veiculo     @default(LIVRE)
   veiculo_peca     veiculo_peca[]
+  uuid_cliente     String?
+  cliente          cliente?           @relation(fields: [uuid_cliente], references: [uuid])
+  veiculo_operador veiculo_operador[]
+}
+
+model peca_operador {
+  id        Int    @id @default(autoincrement())
+  uuid_auth String
+  id_peca   Int
+  auth      auth   @relation(fields: [uuid_auth], references: [uuid])
+  peca      peca   @relation(fields: [id_peca], references: [id])
 }
 
 model peca {
-  id           Int            @id @unique @default(autoincrement())
-  tipo         tipo_peca
-  marca        String
-  km_troca     Float
-  preco_medio  Float
-  km_aviso     Float
-  logo         String?
-  veiculo_peca veiculo_peca[]
+  id            Int             @id @unique @default(autoincrement())
+  tipo          tipo_peca
+  marca         String
+  km_troca      Float
+  preco_medio   Float
+  km_aviso      Float
+  logo          String?
+  veiculo_peca  veiculo_peca[]
+  peca_operador peca_operador[]
 }
 
 model veiculo_peca {

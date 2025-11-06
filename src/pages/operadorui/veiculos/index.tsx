@@ -4,18 +4,20 @@ import { FiPlus } from "react-icons/fi";
 import { Input } from "@/utils/front/components/ui/input";
 import { HiOutlineFilter } from "react-icons/hi";
 import { GoSearch } from "react-icons/go";
-import { FC, useState } from "react";
+import { FC, useContext, useState } from "react";
 import {
   Dialog,
   DialogContent,
   DialogTitle,
 } from "@/utils/front/components/ui/dialog";
 import LabelInput from "@/utils/front/components/ui/label-input";
-import { useForm } from "react-hook-form";
+import { useForm, Controller } from "react-hook-form";
 import {
   Select,
   SelectContent,
+  SelectGroup,
   SelectItem,
+  SelectLabel,
   SelectTrigger,
   SelectValue,
 } from "@/utils/front/components/ui/select";
@@ -26,128 +28,31 @@ import Router from "next/router";
 import { DialogProps } from "@radix-ui/react-dialog";
 import { useSearchParams } from "next/navigation";
 import { cn } from "@/utils/front/lib/utils";
+import { ContextAuth } from "@/utils/front/provider/provider_auth";
+import axios from "axios";
+import { response } from "@/utils/types";
+import { ContextAlert } from "@/utils/front/provider/provider_alert";
+import { MARCA_CARROS, MARCA_MOTOS } from "@/utils/front/constants";
+import { ContextLoading } from "@/utils/front/provider/provider_loading";
+import { useQuery } from "@tanstack/react-query";
 
-export const veiculos_dev: veiculo[] = [
-  {
-    modelo: "Honda Bros 160",
-    tipo: "MOTO",
-    km: 18450,
-    valor_seguro: 95,
-    valor_aluguel: 420,
-    valor_manutencao: 160,
-    placa_veicular: "RTE-2A45",
-    chassi: "9C2KD1230LR001254",
-    foto: "",
-    renavam: "01234567891",
-    uuid: "v001",
-    status: "ALUGADO",
-  },
-  {
-    modelo: "Honda CG 160 Fan",
-    tipo: "MOTO",
-    km: 11200,
-    valor_seguro: 85,
-    valor_aluguel: 380,
-    valor_manutencao: 140,
-    placa_veicular: "QWE-8B29",
-    chassi: "9C2KC1670MR004578",
-    foto: "",
-    renavam: "01123459873",
-    uuid: "v002",
-
-    status: "LIVRE",
-  },
-  {
-    modelo: "Volkswagen CrossFox",
-    tipo: "CARRO",
-    km: 45230,
-    valor_seguro: 230,
-    valor_aluguel: 950,
-    valor_manutencao: 280,
-    placa_veicular: "ABC-1D23",
-    chassi: "9BWZZZ377VT012345",
-    foto: "",
-    renavam: "00987654321",
-    uuid: "v003",
-
-    status: "ALUGADO",
-  },
-  {
-    modelo: "Fiat Strada Adventure",
-    tipo: "CARRO",
-    km: 29870,
-    valor_seguro: 260,
-    valor_aluguel: 1100,
-    valor_manutencao: 350,
-    placa_veicular: "JKL-4F56",
-    chassi: "93XFU25C0K0129987",
-    foto: "",
-    renavam: "00891236754",
-    uuid: "v004",
-
-    status: "LIVRE",
-  },
-  {
-    modelo: "Toyota Corolla",
-    tipo: "CARRO",
-    km: 68200,
-    valor_seguro: 320,
-    valor_aluguel: 1350,
-    valor_manutencao: 400,
-    placa_veicular: "MNO-9G12",
-    chassi: "9BRBLWHE0K1234567",
-    foto: "",
-    renavam: "00784569231",
-    uuid: "v005",
-    status: "LIVRE",
-  },
-  {
-    modelo: "Chevrolet Onix LTZ",
-    tipo: "CARRO",
-    km: 37650,
-    valor_seguro: 270,
-    valor_aluguel: 980,
-    valor_manutencao: 260,
-    placa_veicular: "PQR-3H98",
-    chassi: "9BGKS19X0JB123456",
-    foto: "",
-    renavam: "00999887766",
-    uuid: "v006",
-
-    status: "ALUGADO",
-  },
-  {
-    modelo: "Yamaha Fazer 250",
-    tipo: "MOTO",
-    km: 15780,
-    valor_seguro: 110,
-    valor_aluguel: 430,
-    valor_manutencao: 150,
-    placa_veicular: "STU-7J33",
-    chassi: "9C6KG0410LR001112",
-    foto: "",
-    renavam: "01354789900",
-    uuid: "v007",
-    status: "LIVRE",
-  },
-  {
-    modelo: "Honda XRE 300",
-    tipo: "MOTO",
-    km: 22400,
-    valor_seguro: 125,
-    valor_aluguel: 480,
-    valor_manutencao: 180,
-    placa_veicular: "VWX-5K77",
-    chassi: "9C2KD1920LR009888",
-    foto: "",
-    renavam: "01002345789",
-    uuid: "v008",
-    status: "ALUGADO",
-  },
-];
+const veiculos_dev = null;
 
 export default function Veiculos() {
   const [stateNewVeiculo, setStateNewVeiculo] = useState<boolean>();
+  const { headers } = useContext(ContextAuth);
+  const { data: veiculos } = useQuery<veiculo[]>({
+    queryKey: ["list_veiculos"],
+    queryFn: async () => {
+      return await axios
+        .get("/api/find/veiculos/all", {
+          headers: headers,
+        })
+        .then((response) => {
+          return response.data.result;
+        });
+    },
+  });
 
   return (
     <>
@@ -172,9 +77,9 @@ export default function Veiculos() {
             <GoSearch className="absolute w-[20px] h-[20px] right-5" />
           </div>
         </div>
-        {veiculos_dev ? (
+        {veiculos ? (
           <div className="flex flex-col gap-5">
-            {veiculos_dev.map((veiculo, i) => {
+            {veiculos.map((veiculo, i) => {
               return <ShowVeiculo veiculo={veiculo} key={i} />;
             })}
           </div>
@@ -199,41 +104,141 @@ function NovoVeiculo({ ...props }: React.ComponentProps<FC<DialogProps>>) {
     register,
     handleSubmit,
     watch,
+    getValues,
     formState: { errors },
+    reset,
+    control,
   } = useForm<veiculo>();
+  const { headers } = useContext(ContextAuth);
+  const { drop_alert } = useContext(ContextAlert);
+  const { startLoading } = useContext(ContextLoading);
+
+  const create_veiculo = async (data: veiculo) => {
+    startLoading(
+      axios
+        .put("/api/create/veiculo", data, {
+          headers: headers,
+        })
+        .then((response) => {
+          drop_alert(response.data.type, response.data.m);
+          props.onOpenChange!(false);
+          reset();
+        })
+        .catch((e) => {
+          const response: response = e.response.data;
+          drop_alert(response.type, response.m);
+        })
+    );
+  };
 
   return (
     <Dialog {...props}>
       <DialogContent className="flex flex-col gap-10 ">
         <DialogTitle>Cadastrar um veiculo</DialogTitle>
         <div className="relative overflow-y-auto min-h-[550px]">
-          <form className="flex flex-col gap-5 absolute  w-full">
+          <form
+            onSubmit={handleSubmit(create_veiculo)}
+            className="flex flex-col gap-5 absolute  w-full"
+          >
             <div className="flex flex-col gap-5">
               <div className="border rounded-sm flex flex-col gap-5 p-5">
-                <LabelInput {...register("modelo")} id="Modelo" />
-                <LabelInput {...register("placa_veicular")} id="Placa" />
+                <LabelInput {...register("modelo")} id="Modelo" required />
+                <LabelInput
+                  {...register("placa_veicular")}
+                  maxLength={7}
+                  id="Placa"
+                  required
+                />
                 <div className="flex flex-col gap-3 max-w-[500px]">
-                  <Label>Tipo do veiculo</Label>
-                  <Select {...register("tipo")}>
-                    <SelectTrigger className="w-full">
-                      <SelectValue placeholder="Tipo" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="MOTO">Moto</SelectItem>
-                      <SelectItem value="CARRO">Carro</SelectItem>
-                    </SelectContent>
-                  </Select>
+                  <Label className="after:ml-0.5 after:text-red-500 after:content-['*']">
+                    Marca
+                  </Label>
+                  <Controller
+                    control={control}
+                    name="tipo"
+                    rules={{ required: true }}
+                    render={({ field }) => (
+                      <Select
+                        onValueChange={field.onChange}
+                        value={field.value}
+                      >
+                        <SelectTrigger className="w-full">
+                          <SelectValue placeholder="Tipo" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="MOTO">Moto</SelectItem>
+                          <SelectItem value="CARRO">Carro</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    )}
+                  />
                 </div>
-                <LabelInput {...register("km")} id="Km" />
+                <div className="flex flex-col gap-3 max-w-[500px]">
+                  <Label className="after:ml-0.5 after:text-red-500 after:content-['*']">
+                    Marca
+                  </Label>
+                  <Controller
+                    control={control}
+                    name="marca"
+                    rules={{ required: true }}
+                    render={({ field }) => (
+                      <Select
+                        onValueChange={field.onChange}
+                        value={field.value}
+                      >
+                        <SelectTrigger className="w-full ">
+                          <SelectValue placeholder="Marca" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectGroup>
+                            <SelectLabel className=" text-white font-bold bg-primary">
+                              Motos
+                            </SelectLabel>
+                            {MARCA_MOTOS.sort().map((m, i) => {
+                              return (
+                                <SelectItem key={i} value={`${m}-M`}>
+                                  {m}
+                                </SelectItem>
+                              );
+                            })}
+                          </SelectGroup>
+                          <SelectGroup>
+                            <SelectLabel className=" text-white font-bold bg-primary">
+                              Carros
+                            </SelectLabel>
+                            {MARCA_CARROS.sort().map((m, i) => {
+                              return (
+                                <SelectItem key={i} value={`${m}-C`}>
+                                  {m}
+                                </SelectItem>
+                              );
+                            })}
+                          </SelectGroup>
+                        </SelectContent>
+                      </Select>
+                    )}
+                  />
+                </div>
+
+                <LabelInput
+                  {...register("km")}
+                  id="Km"
+                  required
+                  type="number"
+                />
               </div>
               <div className="border rounded-sm flex flex-col gap-5 p-5">
                 <LabelInput
                   {...register("valor_aluguel")}
                   id="Valor do Aluguel"
+                  required
+                  type="number"
                 />
                 <LabelInput
                   {...register("valor_seguro")}
-                  id="Valor do Seguro"
+                  id="Valor do Seguro / Mês"
+                  type="number"
+                  required
                 />
               </div>
             </div>
@@ -261,7 +266,7 @@ function ShowVeiculo({ veiculo }: { veiculo: veiculo }) {
       onClick={() => selectVeiculo(veiculo.uuid)}
       className={cn(
         "relative border p-5 rounded-lg flex  gap-3 cursor-pointer active:scale-95 transition-all",
-        veiculo.status === "LIVRE" ? "border-green-600" : "border-red-600",
+        veiculo.status === "LIVRE" ? "border-green-600" : "border-red-600"
       )}
     >
       <div className="grid place-content-center basis-0.5 grow max-lg:hidden">
@@ -272,7 +277,7 @@ function ShowVeiculo({ veiculo }: { veiculo: veiculo }) {
         <div
           className={cn(
             "absolute rounded-lg p-2 top-0.5 right-0.5",
-            veiculo.status === "LIVRE" ? "bg-green-600" : "bg-red-600",
+            veiculo.status === "LIVRE" ? "bg-green-600" : "bg-red-600"
           )}
         >
           {veiculo.tipo === "MOTO" && (
@@ -310,7 +315,7 @@ function ShowVeiculo({ veiculo }: { veiculo: veiculo }) {
           {Intl.NumberFormat("pt-br", {
             currency: "BRL",
             style: "currency",
-          }).format(veiculo.valor_manutencao)}
+          }).format(veiculo.valor_manutencao!)}
         </span>
         <span className="text-red-800">
           Seguro:{" "}

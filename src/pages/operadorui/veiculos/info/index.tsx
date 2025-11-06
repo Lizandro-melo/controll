@@ -1,30 +1,35 @@
 import { peca, veiculo, veiculo_peca } from "@prisma/client";
 import { useSearchParams } from "next/navigation";
 import Router from "next/router";
-import { useLayoutEffect, useState } from "react";
-import { veiculos_dev } from "..";
+import { useContext, useLayoutEffect, useState } from "react";
 import { Button } from "@/utils/front/components/ui/button";
 import { FiEdit } from "react-icons/fi";
 import { cn } from "@/utils/front/lib/utils";
 import { IoCaretDownOutline, IoCaretUpOutline } from "react-icons/io5";
 import { TiMinus } from "react-icons/ti";
 import { PiTire, PiUser } from "react-icons/pi";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { veiculo_info } from "@/utils/types";
+import { ContextAuth } from "@/utils/front/provider/provider_auth";
+import axios from "axios";
+import moment from "moment-timezone";
 
 export default function Info() {
   const searchParams = useSearchParams();
   const uuid = searchParams.get("uuid-veiculo")!;
-  const [veiculo, setVeiculo] = useState<veiculo>();
-
-  useLayoutEffect(() => {
-    switch (uuid) {
-      case "":
-        Router.push("/");
-        break;
-      default:
-        setVeiculo(veiculos_dev.filter((v) => v.uuid === uuid)[0]);
-        break;
-    }
-  }, []);
+  const { headers } = useContext(ContextAuth);
+  const { data } = useQuery<veiculo_info>({
+    queryKey: [`veiculo-${uuid}`],
+    queryFn: async () => {
+      return await axios
+        .get(`/api/find/veiculos/${uuid}`, {
+          headers: headers,
+        })
+        .then((response) => {
+          return response.data.result;
+        });
+    },
+  });
 
   function ElementDados({
     titulo,
@@ -56,30 +61,30 @@ export default function Info() {
         <div
           className={cn(
             "h-[20px] text-white rounded-b-sm text-center font-bold text-xs flex items-center justify-center",
-            veiculo?.status === "LIVRE" ? "bg-green-600" : "bg-red-600",
+            data?.veiculo?.status === "LIVRE" ? "bg-green-600" : "bg-red-600"
           )}
         >
-          {veiculo?.status === "LIVRE" && <span>Livre</span>}
-          {veiculo?.status === "ALUGADO" && <span>Alugado</span>}
+          {data?.veiculo?.status === "LIVRE" && <span>Livre</span>}
+          {data?.veiculo?.status === "ALUGADO" && <span>Alugado</span>}
         </div>
       </div>
       <div className="border rounded-sm flex flex-wrap p-5 gap-5 justify-center relative">
         <span className="text-stone-600 font-bold w-full">Informações</span>
-        <ElementDados titulo="tipo" data={veiculo?.tipo} />
-        <ElementDados titulo="modelo" data={veiculo?.modelo} />
-        <ElementDados titulo="placa" data={veiculo?.placa_veicular} />
-        <ElementDados titulo="km" data={veiculo?.km.toString()} />
-        <ElementDados titulo="renavam" data={veiculo?.renavam} />
-        <ElementDados titulo="chassi" data={veiculo?.chassi} />
+        <ElementDados titulo="tipo" data={data?.veiculo?.tipo} />
+        <ElementDados titulo="modelo" data={data?.veiculo?.modelo} />
+        <ElementDados titulo="placa" data={data?.veiculo?.placa_veicular} />
+        <ElementDados titulo="km" data={data?.veiculo?.km.toString()} />
+        <ElementDados titulo="renavam" data={data?.veiculo?.renavam} />
+        <ElementDados titulo="chassi" data={data?.veiculo?.chassi} />
       </div>
       <div className="border rounded-sm flex flex-wrap p-5 gap-5 justify-center relative">
         <span className="text-stone-600 font-bold w-full">Financeiro</span>
         <div
           className={cn(
             "grow basis-[250px] p-10 text-center rounded-sm border relative font-semibold",
-            veiculo?.status === "ALUGADO"
+            data?.veiculo?.status === "ALUGADO"
               ? "border-green-400 text-green-600"
-              : "border-stone-400 text-stone-600",
+              : "border-stone-400 text-stone-600"
           )}
         >
           <span className="absolute text-sm top-1 left-2 ">ALUGUEL</span>{" "}
@@ -87,16 +92,20 @@ export default function Info() {
             {Intl.NumberFormat("pt-br", {
               currency: "BRL",
               style: "currency",
-            }).format(veiculo?.valor_aluguel!)}
-            {veiculo?.status === "ALUGADO" ? <IoCaretUpOutline /> : <TiMinus />}
+            }).format(data?.veiculo?.valor_aluguel!)}
+            {data?.veiculo?.status === "ALUGADO" ? (
+              <IoCaretUpOutline />
+            ) : (
+              <TiMinus />
+            )}
           </span>
         </div>
         <div
           className={cn(
             "grow basis-[250px] p-10 text-center rounded-sm border relative font-semibold",
-            veiculo?.status === "ALUGADO"
+            data?.veiculo?.status === "ALUGADO"
               ? "border-red-400 text-red-600"
-              : "border-stone-400 text-stone-600",
+              : "border-stone-400 text-stone-600"
           )}
         >
           <span className="absolute text-sm top-1 left-2 ">MANUTENÇÃO</span>{" "}
@@ -104,8 +113,8 @@ export default function Info() {
             {Intl.NumberFormat("pt-br", {
               currency: "BRL",
               style: "currency",
-            }).format(veiculo?.valor_manutencao!)}
-            {veiculo?.status === "ALUGADO" ? (
+            }).format(data?.veiculo?.valor_manutencao!)}
+            {data?.veiculo?.status === "ALUGADO" ? (
               <IoCaretDownOutline />
             ) : (
               <TiMinus />
@@ -115,17 +124,17 @@ export default function Info() {
         <div
           className={cn(
             "grow basis-[250px] p-10 text-center rounded-sm border relative font-semibold",
-            veiculo?.status === "ALUGADO"
+            data?.veiculo?.status === "ALUGADO"
               ? "border-red-400 text-red-600"
-              : "border-stone-400 text-stone-600",
+              : "border-stone-400 text-stone-600"
           )}
         >
           <span className="absolute text-sm top-1 left-2 ">SEGURO</span>{" "}
-          <span className="text-xl flex justify-center items-center">
+          <span className="text-xl flex justify-center items-center border-red-400 text-red-600">
             {Intl.NumberFormat("pt-br", {
               currency: "BRL",
               style: "currency",
-            }).format(veiculo?.valor_seguro!)}
+            }).format(data?.veiculo?.valor_seguro!)}
             <IoCaretDownOutline />
           </span>
         </div>
@@ -134,9 +143,12 @@ export default function Info() {
         <span className="text-stone-600 font-bold w-full">
           Peças vinculadas
         </span>
-        {Array.from<veiculo_peca>({ length: 5 }).map((peca, i) => {
+        {data?.pecas?.map((peca, i) => {
           return (
-            <div className="grow basis-[100%]  text-center rounded-sm border relative font-semibold ">
+            <div
+              key={i}
+              className="grow basis-[100%]  text-center rounded-sm border relative font-semibold "
+            >
               <div className="absolute opacity-30 bg-stone-300 w-[60%] h-full rounded-sm"></div>
               <div className="relative p-5 flex items-center justify-end">
                 <span className="absolute text-xs top-2 left-2 ">
@@ -157,27 +169,38 @@ export default function Info() {
           );
         })}
       </div>
-      {veiculo?.status === "ALUGADO" && (
+      {data?.veiculo?.status === "ALUGADO" && (
         <div className="border rounded-sm flex flex-wrap p-5 gap-5 justify-center relative">
           <span className="text-stone-600 font-bold w-full">
             Cliente Vinculado
           </span>
           <div className="grow basis-[100%] pt-10 pl-5 pr-5 pb-5 text-center rounded-sm border relative font-semibold flex items-center justify-end">
             <span className="absolute text-sm top-2 left-2 ">
-              NOME COMPLRETO
+              {data?.cliente?.pessoa.nome_completo}
             </span>
 
             <div className="flex gap-3 text-xs justify-between w-full items-center">
               <div className="flex flex-col gap-2 items-start">
-                <span>CPF: 000.000.000-00</span>
-                <span>DATA DE CONTRATO: 00/00/0000</span>
-                <span>DATA DE VENCIMENTO: 00/00/0000</span>
+                <span>CPF: {data?.cliente?.pessoa.num_cpf}</span>
+                <span>
+                  DATA DE CONTRATO:{" "}
+                  {moment(data.cliente?.cliente.data_contrato).toString()}
+                </span>
+                <span>
+                  DATA DE VENCIMENTO:{" "}
+                  {moment(data.cliente?.cliente.data_fim_contrato).toString()}
+                </span>
                 <span>
                   TOTAL PAGO:{" "}
                   {Intl.NumberFormat("pt-br", {
                     currency: "BRL",
                     style: "currency",
-                  }).format(veiculo?.valor_aluguel!)}
+                  }).format(
+                    data?.veiculo?.valor_aluguel! *
+                      moment(data.cliente?.cliente.data_contrato).diff(
+                        data.cliente?.cliente.data_fim_contrato
+                      )
+                  )}
                 </span>
               </div>
               <div>

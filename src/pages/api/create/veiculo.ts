@@ -1,0 +1,33 @@
+import type { dash_data, response } from "@/utils/types";
+import type { NextApiRequest, NextApiResponse } from "next";
+import {
+  consult_tipo_user_by_uuid,
+  consult_uuid_auth_by_session,
+  export_dash_data_by_uuid,
+} from "@/utils/server/service/consult";
+import { create_veiculo } from "@/utils/server/service/create";
+import z from "zod";
+import { veiculo } from "@prisma/client";
+import { log } from "console";
+
+export default async function veiculoApiCreate(
+  req: NextApiRequest,
+  res: NextApiResponse<response>
+) {
+  try {
+    // const schemaVeiculo = z.object<veiculo>();
+    // const { ...props } = z.parse(schemaVeiculo, req.body) as veiculo;
+    const veiculo: veiculo = req.body;
+    const session_key = req.headers.authorization?.replace("Bearer ", "");
+    const { uuid } = await consult_uuid_auth_by_session(session_key!);
+    await create_veiculo(veiculo, uuid);
+    res
+      .status(200)
+      .json({ result: null, m: "Veiculo criado com sucesso", type: "sucess" });
+  } catch (e: any) {
+    log(e.message);
+    res
+      .status(403)
+      .json({ m: "Não foi possível cadastrar o veiculo", type: "error" });
+  }
+}

@@ -34,7 +34,7 @@ export function ProviderLoading({ children }: { children: ReactNode }) {
     >
       <div
         className={cn(
-          "w-full h-full place-content-center absolute bg-white opacity-40 hidden z-50",
+          "w-full h-full place-content-center absolute bg-white opacity-40 hidden z-[100]",
           stateLoading && "!grid",
         )}
       >

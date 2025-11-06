@@ -37,12 +37,16 @@ type ContextAuthType = {
   loginIn: (data: LoginData) => void;
   loginOff: () => void;
   setAuth: Dispatch<SetStateAction<boolean>>;
+  headers: {
+    Authorization: string;
+  };
 };
 
 export const ContextAuth = createContext({} as ContextAuthType);
 
 export function ProviderAuth({ children }: { children: ReactNode }) {
   const [auth, setAuth] = useState<boolean>(false);
+  const { session_uuid_controll: session } = parseCookies();
   const [flashLogo, setFlashLogo] = useState(true);
   const AnimeLogoTimer = useCallback(async () => {
     await new Promise((resolve) => setTimeout(resolve, 3000));
@@ -50,24 +54,31 @@ export function ProviderAuth({ children }: { children: ReactNode }) {
   }, []);
   const { startLoading } = useContext(ContextLoading);
   const { drop_alert } = useContext(ContextAlert);
+  const headers = {
+    Authorization: `Bearer ${session}`,
+  };
 
   useEffect(() => {
     AnimeLogoTimer();
   }, [AnimeLogoTimer]);
 
   useLayoutEffect(() => {
-    const { session_uuid_controll: session } = parseCookies();
-    if (session) {
-      Router.push("/session");
+    if (Router.asPath.split("?")[0] === "/register") {
+      return;
     } else {
-      Router.push("/");
+      const { session_uuid_controll: session } = parseCookies();
+      if (session) {
+        Router.push("/session");
+      } else {
+        Router.push("/");
+      }
     }
   }, []);
 
   const loginIn = (data: LoginData) => {
     startLoading(
       axios
-        .post("/api/auth", data)
+        .post("/api/auth/login", data)
         .then((response) => {
           const session: string = response.data.result;
           setCookie(undefined, NAME_COOKIE_SESSION, session);
@@ -76,8 +87,8 @@ export function ProviderAuth({ children }: { children: ReactNode }) {
         })
         .catch((e) => {
           const response: response = e.response.data;
-          drop_alert(response.type, response.result);
-        }),
+          drop_alert(response.type, response.m);
+        })
     );
   };
 
@@ -94,6 +105,7 @@ export function ProviderAuth({ children }: { children: ReactNode }) {
         loginIn,
         loginOff,
         setAuth,
+        headers,
       }}
     >
       <main

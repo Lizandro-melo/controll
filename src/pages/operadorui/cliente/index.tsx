@@ -21,24 +21,6 @@ import { auth, pessoa } from "@prisma/client";
 // --------------------
 export type ClienteFull = auth;
 
-export const clientes_dev: ClienteFull[] = [
-  {
-    uuid: "u001",
-    status: true,
-    role: "USER" as any,
-  },
-  {
-    uuid: "u002",
-    status: false,
-    role: "USER" as any,
-  },
-  {
-    uuid: "u003",
-    status: true,
-    role: "USER" as any,
-  },
-];
-
 export default function Clientes() {
   const [stateNewCliente, setStateNewCliente] = useState<boolean>();
 
@@ -69,23 +51,15 @@ export default function Clientes() {
           </div>
         </div>
 
-        {clientes_dev && clientes_dev.length > 0 ? (
-          <div className="flex flex-col gap-5">
-            {/* {clientes_dev.map((cliente, i) => (
-              <ShowCliente cliente={cliente} key={i} />
-            ))} */}
+        <div className="relative border item-resume p-10 rounded-lg flex flex-col justify-center items-center gap-3">
+          <FiUsers className="stroke-stone-500 w-[30px] h-[30px]" />
+          <div className="flex flex-col items-center">
+            <span className="font-semibold">Nenhum cliente cadastrado</span>
+            <span className="font-semibold text-sm text-stone-400">
+              Comece cadastrando seus clientes na plataforma
+            </span>
           </div>
-        ) : (
-          <div className="relative border item-resume p-10 rounded-lg flex flex-col justify-center items-center gap-3">
-            <FiUsers className="stroke-stone-500 w-[30px] h-[30px]" />
-            <div className="flex flex-col items-center">
-              <span className="font-semibold">Nenhum cliente cadastrado</span>
-              <span className="font-semibold text-sm text-stone-400">
-                Comece cadastrando seus clientes na plataforma
-              </span>
-            </div>
-          </div>
-        )}
+        </div>
       </div>
     </>
   );
