@@ -5,11 +5,13 @@ import {
 } from "@/utils/server/service/consult";
 import { response } from "@/utils/types";
 import type { NextApiRequest, NextApiResponse } from "next";
+import { cors } from "../_middlewares/cors";
 
 export default async function session(
   req: NextApiRequest,
   res: NextApiResponse<response>
 ) {
+  if (cors(req, res)) return;
   const session = req.query.session as string;
   try {
     const { uuid, id_asaas, id_sub } = await consult_uuid_auth_by_session(

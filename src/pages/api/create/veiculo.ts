@@ -9,12 +9,14 @@ import { create_veiculo } from "@/utils/server/service/create";
 import z from "zod";
 import { veiculo } from "@prisma/client";
 import { log } from "console";
+import { cors } from "../_middlewares/cors";
 
 export default async function veiculoApiCreate(
   req: NextApiRequest,
   res: NextApiResponse<response>
 ) {
   try {
+    if (cors(req, res)) return;
     // const schemaVeiculo = z.object<veiculo>();
     // const { ...props } = z.parse(schemaVeiculo, req.body) as veiculo;
     const veiculo: veiculo = req.body;

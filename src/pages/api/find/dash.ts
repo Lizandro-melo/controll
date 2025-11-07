@@ -5,11 +5,13 @@ import {
   consult_uuid_auth_by_session,
   export_dash_data_by_uuid,
 } from "@/utils/server/service/consult";
+import { cors } from "../_middlewares/cors";
 
 export default async function dashApi(
   req: NextApiRequest,
   res: NextApiResponse<response>
 ) {
+  if (cors(req, res)) return;
   try {
     const session_key = req.headers.authorization?.replace("Bearer ", "");
     const { uuid } = await consult_uuid_auth_by_session(session_key!);

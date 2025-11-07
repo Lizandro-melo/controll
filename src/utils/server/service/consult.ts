@@ -12,7 +12,7 @@ export const consult_pessoa_uuid_by_cpf = async (
     .findUniqueOrThrow({ where: { num_cpf: cpf }, include: { auth: true } })
     .then((response) => response)
     .catch(() => {
-      throw new Error("Login ou senha invalidos");
+      throw new Error("Login ou senha inválidos");
     });
 
   return {

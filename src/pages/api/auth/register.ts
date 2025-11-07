@@ -10,11 +10,13 @@ import moment from "moment-timezone";
 import type { NextApiRequest, NextApiResponse } from "next";
 import { isCPF } from "validation-br";
 import z, { success } from "zod";
+import { cors } from "../_middlewares/cors";
 
 export default async function registerApi(
   req: NextApiRequest,
   res: NextApiResponse<response>
 ) {
+  if (cors(req, res)) return;
   try {
     const token = req.headers.authorization?.replace("Bearer ", "");
     await validation_token_register(token!);

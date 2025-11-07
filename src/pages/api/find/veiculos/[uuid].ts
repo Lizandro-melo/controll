@@ -7,11 +7,13 @@ import {
 } from "@/utils/server/service/consult";
 import { veiculo } from "@prisma/client";
 import { log } from "console";
+import { cors } from "../../_middlewares/cors";
 
 export default async function veiculoApiFind(
   req: NextApiRequest,
   res: NextApiResponse<response>
 ) {
+  if (cors(req, res)) return;
   try {
     const session_key = req.headers.authorization?.replace("Bearer ", "");
     const { uuid: uuid_auth } = await consult_uuid_auth_by_session(
