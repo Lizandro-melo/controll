@@ -3,14 +3,27 @@ import { FiBox, FiPlus } from "react-icons/fi";
 import { Input } from "@/utils/front/components/ui/input";
 import { HiOutlineFilter } from "react-icons/hi";
 import { GoSearch } from "react-icons/go";
-import { FC, useState } from "react";
+import { PiBatteryCharging, PiEngine, PiSteeringWheel } from "react-icons/pi";
+import { MdLightbulb, MdOutlineBuild } from "react-icons/md";
+import { GiCarWheel, GiCarDoor, GiGearStickPattern } from "react-icons/gi";
+import { FaBolt, FaOilCan, FaCogs, FaFan } from "react-icons/fa";
+import { TbSteeringWheel, TbEngine, TbCircleDotted } from "react-icons/tb";
+import { BsFillCarFrontFill } from "react-icons/bs";
+import {
+  FC,
+  JSX,
+  useContext,
+  useEffect,
+  useLayoutEffect,
+  useState,
+} from "react";
 import {
   Dialog,
   DialogContent,
   DialogTitle,
 } from "@/utils/front/components/ui/dialog";
 import LabelInput from "@/utils/front/components/ui/label-input";
-import { useForm } from "react-hook-form";
+import { Controller, useForm } from "react-hook-form";
 import {
   Select,
   SelectContent,
@@ -23,32 +36,32 @@ import { peca } from "@prisma/client";
 import { PiTire } from "react-icons/pi";
 import { cn } from "@/utils/front/lib/utils";
 import { MdFilterDrama } from "react-icons/md";
-
-export const pecas_dev: peca[] = [
-  {
-    id: 1,
-    tipo: "PNEU" as any,
-    marca: "Pirelli",
-    km_troca: 20000,
-    preco_medio: 450,
-    km_aviso: 18000,
-
-    logo: "",
-  },
-  {
-    id: 2,
-    tipo: "FILTRO_AR" as any,
-    marca: "Bosch",
-    km_troca: 15000,
-    preco_medio: 120,
-    km_aviso: 13000,
-
-    logo: "",
-  },
-];
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import axios from "axios";
+import { ContextAuth } from "@/utils/front/provider/provider_auth";
+import { X } from "lucide-react";
+import { ContextAlert } from "@/utils/front/provider/provider_alert";
+import { ContextLoading } from "@/utils/front/provider/provider_loading";
+import { response } from "@/utils/types";
+import { TIPO_PECA } from "@/utils/front/constants";
 
 export default function Pecas() {
-  const [stateNewPeca, setStateNewPeca] = useState<boolean>();
+  const [stateNewPeca, setStateNewPeca] = useState<boolean>(false);
+  const [filter, setFilter] = useState("");
+  const queryClient = useQueryClient();
+  const { headers } = useContext(ContextAuth);
+  const { data: pecas } = useQuery<peca[]>({
+    queryKey: ["list_pecas"],
+    queryFn: async () => {
+      return await axios
+        .get("/api/find/pecas/all", {
+          headers: headers,
+        })
+        .then((response) => {
+          return response.data.result;
+        });
+    },
+  });
 
   return (
     <>
@@ -68,18 +81,37 @@ export default function Pecas() {
         </div>
 
         <div className="flex">
-          <Button className="cursor-pointer">
-            <HiOutlineFilter />
-          </Button>
           <div className="relative w-full flex items-center">
-            <Input placeholder="Buscar peça..." className="pr-14" />
-            <GoSearch className="absolute w-[20px] h-[20px] right-5" />
+            <Input
+              placeholder="Tipo"
+              className="pr-14"
+              value={filter}
+              onInput={(e) => {
+                setFilter(e.currentTarget.value);
+                const value = e.currentTarget.value.toUpperCase();
+                if (value === "") {
+                  queryClient.fetchQuery({ queryKey: ["list_pecas"] });
+                }
+                const pecas = queryClient.getQueryData<peca[]>(["list_pecas"]);
+                const find_veiculo = pecas?.filter((v) =>
+                  v.tipo?.toUpperCase().includes(value)
+                );
+                queryClient.setQueryData(["list_pecas"], find_veiculo);
+              }}
+            />
+            <X
+              className="absolute w-[20px] h-[20px] right-5 cursor-pointer"
+              onClick={() => {
+                setFilter("");
+                queryClient.fetchQuery({ queryKey: ["list_pecas"] });
+              }}
+            />
           </div>
         </div>
 
-        {pecas_dev && pecas_dev.length > 0 ? (
+        {pecas && pecas.length > 0 ? (
           <div className="flex flex-col gap-5">
-            {pecas_dev.map((peca, i) => (
+            {pecas.map((peca, i) => (
               <ShowPeca peca={peca} key={i} />
             ))}
           </div>
@@ -100,49 +132,94 @@ export default function Pecas() {
 }
 
 function NovaPeca({ ...props }: React.ComponentProps<FC<any>>) {
-  const { register, handleSubmit } = useForm<peca>();
-
+  const { register, handleSubmit, reset, control } = useForm<peca>();
+  const { headers } = useContext(ContextAuth);
+  const { drop_alert } = useContext(ContextAlert);
+  const { startLoading } = useContext(ContextLoading);
+  const queryClient = useQueryClient();
+  const { mutateAsync: create_peca } = useMutation({
+    mutationFn: async (data: peca) => {
+      startLoading(
+        axios
+          .put("/api/create/peca", data, {
+            headers: headers,
+          })
+          .then((response) => {
+            drop_alert(response.data.type, response.data.m);
+            props.onOpenChange!(false);
+            reset();
+            queryClient.fetchQuery({ queryKey: ["list_pecas"] });
+          })
+          .catch((e) => {
+            const response: response = e.response.data;
+            drop_alert(response.type, response.m);
+          })
+      );
+    },
+  });
   return (
     <Dialog {...props}>
       <DialogContent className="flex flex-col gap-10 ">
         <DialogTitle>Cadastrar uma nova peça</DialogTitle>
         <div className="relative overflow-y-auto min-h-[550px]">
-          <form className="flex flex-col gap-5 absolute  w-full">
+          <form
+            onSubmit={handleSubmit((data) => create_peca(data))}
+            className="flex flex-col gap-5 absolute  w-full"
+          >
             <div className="flex flex-col gap-5">
               <div className="border rounded-sm flex flex-col gap-5 p-5">
                 <div className="flex flex-col gap-3 max-w-[500px]">
-                  <Label>Tipo da Peça</Label>
-                  <Select {...register("tipo")}>
-                    <SelectTrigger className="w-full">
-                      <SelectValue placeholder="Tipo" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="PNEU">Pneu</SelectItem>
-                      <SelectItem value="FILTRO_AR">Filtro de Ar</SelectItem>
-                      <SelectItem value="OLEO_MOTOR">Óleo do Motor</SelectItem>
-                      <SelectItem value="PASTILHA_FREIO">
-                        Pastilha de Freio
-                      </SelectItem>
-                    </SelectContent>
-                  </Select>
+                  <Label className="after:text-red-500 after:content-['*']">
+                    Tipo da Peça
+                  </Label>
+                  <Controller
+                    control={control}
+                    name="tipo"
+                    rules={{ required: true }}
+                    render={({ field }) => (
+                      <Select
+                        onValueChange={field.onChange}
+                        value={field.value}
+                      >
+                        <SelectTrigger className="w-full">
+                          <SelectValue placeholder="Tipo" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {TIPO_PECA.sort().map((p, i) => {
+                            return (
+                              <SelectItem key={i} value={p}>
+                                {p.replace("_", " ")}
+                              </SelectItem>
+                            );
+                          })}
+                        </SelectContent>
+                      </Select>
+                    )}
+                  />
                 </div>
-                <LabelInput {...register("marca")} id="Marca" />
+                <LabelInput required {...register("marca")} id="Marca" />
               </div>
               <div className="border rounded-sm flex flex-col gap-5 p-5">
                 <LabelInput
                   {...register("km_troca")}
                   id="KM para troca"
                   placeholder="Ex: 20000"
+                  type="number"
+                  required
                 />
                 <LabelInput
                   {...register("km_aviso")}
                   id="KM para aviso"
                   placeholder="Ex: 18000"
+                  type="number"
+                  required
                 />
                 <LabelInput
                   {...register("preco_medio")}
                   id="Preço médio (R$)"
                   placeholder="Ex: 450"
+                  type="number"
+                  required
                 />
               </div>
             </div>
@@ -155,47 +232,239 @@ function NovaPeca({ ...props }: React.ComponentProps<FC<any>>) {
 }
 
 function ShowPeca({ peca }: { peca: peca }) {
+  const [stateEditPeca, setStateEditPeca] = useState<boolean>(false);
+  const [pecaSelect, setPecaSelect] = useState<peca>();
   return (
-    <div
-      key={peca.id}
-      className={cn(
-        "relative border p-5 rounded-lg flex gap-3 cursor-pointer active:scale-95 transition-all",
-      )}
-    >
-      {peca.tipo === "PNEU" && (
+    <>
+      <EditarPeca
+        open={stateEditPeca}
+        onOpenChange={setStateEditPeca}
+        peca={pecaSelect}
+        key={peca.id}
+      />
+      <div
+        onClick={() => {
+          setPecaSelect(peca);
+          setStateEditPeca(true);
+        }}
+        key={peca.id}
+        className={cn(
+          "relative border p-5 rounded-lg flex gap-3 cursor-pointer active:scale-95 transition-all"
+        )}
+      >
         <div className="grid place-content-center basis-0.5 grow max-lg:hidden">
-          <PiTire className="w-[35px] h-[35px]" />
+          {IconePeca[peca.tipo] || (
+            <MdOutlineBuild className="w-[35px] h-[35px]" />
+          )}
         </div>
-      )}
-      {peca.tipo === "FILTRO_AR" && (
-        <div className="grid place-content-center basis-0.5 grow max-lg:hidden">
-          <MdFilterDrama className="w-[35px] h-[35px]" />
-        </div>
-      )}
 
-      <div className="basis-0.5 flex-col text-xs gap-2 flex grow justify-center">
-        <div>
-          <span>Tipo: {peca.tipo}</span>
+        <div className="basis-0.5 flex-col text-xs gap-2 flex grow justify-center">
+          <div>
+            <span>Tipo: {peca.tipo}</span>
+          </div>
+          <div>
+            <span>Marca: {peca.marca}</span>
+          </div>
+          <div>
+            <span>Troca: {peca.km_troca.toLocaleString()} km</span>
+          </div>
+          <div>
+            <span>Aviso: {peca.km_aviso.toLocaleString()} km</span>
+          </div>
         </div>
-        <div>
-          <span>Marca: {peca.marca}</span>
-        </div>
-        <div>
-          <span>Troca: {peca.km_troca.toLocaleString()} km</span>
-        </div>
-        <div>
-          <span>Aviso: {peca.km_aviso.toLocaleString()} km</span>
+        <div className="basis-0.5 flex-col text-xs gap-2 flex grow justify-center">
+          <span className="text-green-800">
+            Preço Médio:{" "}
+            {Intl.NumberFormat("pt-br", {
+              currency: "BRL",
+              style: "currency",
+            }).format(peca.preco_medio)}
+          </span>
         </div>
       </div>
-      <div className="basis-0.5 flex-col text-xs gap-2 flex grow justify-center">
-        <span className="text-green-800">
-          Preço Médio:{" "}
-          {Intl.NumberFormat("pt-br", {
-            currency: "BRL",
-            style: "currency",
-          }).format(peca.preco_medio)}
-        </span>
-      </div>
-    </div>
+    </>
   );
 }
+
+function EditarPeca({
+  open,
+  onOpenChange,
+  peca,
+}: {
+  open: any;
+  onOpenChange: any;
+  peca?: peca;
+}) {
+  const { register, handleSubmit, reset, control, setValue } = useForm<peca>({
+    defaultValues: {
+      ...peca,
+    },
+  });
+  const { headers } = useContext(ContextAuth);
+  const { drop_alert } = useContext(ContextAlert);
+  const { startLoading } = useContext(ContextLoading);
+  const queryClient = useQueryClient();
+  const { mutateAsync: create_peca } = useMutation({
+    mutationFn: async (data: peca) => {
+      startLoading(
+        axios
+          .post(`/api/update/peca`, data, {
+            headers: headers,
+          })
+          .then((response) => {
+            drop_alert(response.data.type, response.data.m);
+            onOpenChange!(false);
+            reset();
+            queryClient.fetchQuery({ queryKey: ["list_pecas"] });
+          })
+          .catch((e) => {
+            const response: response = e.response.data;
+            drop_alert(response.type, response.m);
+          })
+      );
+    },
+  });
+
+  useEffect(() => {
+    if (peca) {
+      reset({
+        id: peca.id,
+        marca: peca.marca,
+        km_aviso: peca.km_aviso,
+        km_troca: peca.km_troca,
+        preco_medio: peca.preco_medio,
+        tipo: peca.tipo,
+      });
+    }
+  }, [peca, reset]);
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="flex flex-col gap-10 ">
+        <DialogTitle>Editar informações da peça</DialogTitle>
+        <div className="relative overflow-y-auto min-h-[550px]">
+          <form
+            onSubmit={handleSubmit((data) => create_peca(data))}
+            className="flex flex-col gap-5 absolute  w-full"
+          >
+            <div className="flex flex-col gap-5">
+              <div className="border rounded-sm flex flex-col gap-5 p-5">
+                <div className="flex flex-col gap-3 max-w-[500px]">
+                  <Label className="after:text-red-500 after:content-['*']">
+                    Tipo da Peça
+                  </Label>
+                  <Controller
+                    control={control}
+                    name="tipo"
+                    rules={{ required: true }}
+                    render={({ field }) => (
+                      <Select
+                        onValueChange={field.onChange}
+                        value={field.value}
+                      >
+                        <SelectTrigger className="w-full">
+                          <SelectValue placeholder="Tipo" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {TIPO_PECA.sort().map((p, i) => {
+                            return (
+                              <SelectItem key={i} value={p}>
+                                {p.replace("_", " ")}
+                              </SelectItem>
+                            );
+                          })}
+                        </SelectContent>
+                      </Select>
+                    )}
+                  />
+                </div>
+                <LabelInput required {...register("marca")} id="Marca" />
+              </div>
+              <div className="border rounded-sm flex flex-col gap-5 p-5">
+                <LabelInput
+                  {...register("km_troca")}
+                  id="KM para troca"
+                  placeholder="Ex: 20000"
+                  type="number"
+                  required
+                />
+                <LabelInput
+                  {...register("km_aviso")}
+                  id="KM para aviso"
+                  placeholder="Ex: 18000"
+                  type="number"
+                  required
+                />
+                <LabelInput
+                  {...register("preco_medio")}
+                  id="Preço médio (R$)"
+                  placeholder="Ex: 450"
+                  type="number"
+                  required
+                />
+              </div>
+            </div>
+            <Button>Editar</Button>
+          </form>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+const IconePeca: Record<string, JSX.Element> = {
+  PNEU: <PiTire className="w-[35px] h-[35px]" />,
+  PASTILHA_FREIO: <MdOutlineBuild className="w-[35px] h-[35px]" />,
+  DISCO_FREIO: <MdOutlineBuild className="w-[35px] h-[35px]" />,
+  SAPATA_FREIO: <MdOutlineBuild className="w-[35px] h-[35px]" />,
+
+  EMBREAGEM_PLATO: <GiGearStickPattern className="w-[35px] h-[35px]" />,
+  EMBREAGEM_DISCO: <GiGearStickPattern className="w-[35px] h-[35px]" />,
+  EMBREAGEM_ROLAMENTO: <GiGearStickPattern className="w-[35px] h-[35px]" />,
+  MOLAS_EMBREAGEM: <GiGearStickPattern className="w-[35px] h-[35px]" />,
+
+  CORRENTE_TRANSMISSAO: <FaCogs className="w-[35px] h-[35px]" />,
+  COROA_TRANSMISSAO: <FaCogs className="w-[35px] h-[35px]" />,
+  PINHAO_TRANSMISSAO: <FaCogs className="w-[35px] h-[35px]" />,
+
+  CORREIA_DENTADA: <FaCogs className="w-[35px] h-[35px]" />,
+  CORREIA_ALTERNADOR: <FaCogs className="w-[35px] h-[35px]" />,
+  CORREIA_ACESSORIOS: <FaCogs className="w-[35px] h-[35px]" />,
+
+  VELA_IGNICAO: <FaBolt className="w-[35px] h-[35px]" />,
+
+  // AMORTECEDOR: <GiCarSuspension className="w-[35px] h-[35px]" />,
+  // AMORTECEDOR_DIANTEIRO: <GiCarSuspension className="w-[35px] h-[35px]" />,
+  // AMORTECEDOR_TRASEIRO: <GiCarSuspension className="w-[35px] h-[35px]" />,
+  // BUCHA_SUSPENSAO: <GiCarSuspension className="w-[35px] h-[35px]" />,
+  // PIVO_SUSPENSAO: <GiCarSuspension className="w-[35px] h-[35px]" />,
+
+  TERMINAL_DIRECAO: <TbSteeringWheel className="w-[35px] h-[35px]" />,
+  ROLAMENTO_DIRECAO: <TbCircleDotted className="w-[35px] h-[35px]" />,
+
+  COXIM_MOTOR: <TbEngine className="w-[35px] h-[35px]" />,
+  COXIM_CAMBIO: <TbEngine className="w-[35px] h-[35px]" />,
+
+  BATERIA: <PiBatteryCharging className="w-[35px] h-[35px]" />,
+  ESCOVA_ALTERNADOR: <PiEngine className="w-[35px] h-[35px]" />,
+  ESCOVA_MOTOR_PARTIDA: <PiEngine className="w-[35px] h-[35px]" />,
+  LAMPADA: <MdLightbulb className="w-[35px] h-[35px]" />,
+
+  ROLAMENTO_RODA: <GiCarWheel className="w-[35px] h-[35px]" />,
+
+  CABO_EMBREAGEM: <GiCarDoor className="w-[35px] h-[35px]" />,
+  CABO_ACELERADOR: <GiCarDoor className="w-[35px] h-[35px]" />,
+  CABO_FREIO: <GiCarDoor className="w-[35px] h-[35px]" />,
+
+  FILTRO_AR: <MdFilterDrama className="w-[35px] h-[35px]" />,
+  FILTRO_OLEO: <FaOilCan className="w-[35px] h-[35px]" />,
+  FILTRO_COMBUSTIVEL: <FaOilCan className="w-[35px] h-[35px]" />,
+  FILTRO_CABINE: <FaFan className="w-[35px] h-[35px]" />,
+
+  CONSUMIVEL_OLEO_MOTOR: <FaOilCan className="w-[35px] h-[35px]" />,
+  CONSUMIVEL_FLUIDO_FREIO: <FaOilCan className="w-[35px] h-[35px]" />,
+  CONSUMIVEL_FLUIDO_ARREFECIMENTO: <FaOilCan className="w-[35px] h-[35px]" />,
+
+  MANOPLA: <BsFillCarFrontFill className="w-[35px] h-[35px]" />,
+  PEDALEIRA: <BsFillCarFrontFill className="w-[35px] h-[35px]" />,
+};

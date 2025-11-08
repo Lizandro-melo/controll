@@ -230,7 +230,7 @@ model veiculo {
 model peca_operador {
   id        Int    @id @default(autoincrement())
   uuid_auth String
-  id_peca   Int
+  id_peca   Int    @unique
   auth      auth   @relation(fields: [uuid_auth], references: [uuid])
   peca      peca   @relation(fields: [id_peca], references: [id])
 }

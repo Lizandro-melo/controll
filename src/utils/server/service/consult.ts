@@ -1,4 +1,11 @@
-import { auth, cliente, pessoa, Tipo_User, veiculo } from "@prisma/client";
+import {
+  auth,
+  cliente,
+  peca,
+  pessoa,
+  Tipo_User,
+  veiculo,
+} from "@prisma/client";
 import { PRISMA } from "../db";
 import moment from "moment-timezone";
 import { DAYS_EXPIRE_SESSION } from "../constants";
@@ -189,6 +196,23 @@ export const consult_veiculos_by_uuid_auth = async (
     });
 };
 
+export const consult_pecas_by_uuid_auth = async (
+  uuid_auth: string
+): Promise<peca[]> => {
+  return await PRISMA.peca_operador
+    .findMany({
+      where: {
+        uuid_auth: uuid_auth,
+      },
+      include: {
+        peca: true,
+      },
+    })
+    .then((response) => {
+      return response.map((p) => p.peca);
+    });
+};
+
 export const consult_veiculo_info_by_uuid_veiculo = async (
   uuid: string
 ): Promise<veiculo_info> => {
@@ -230,4 +254,19 @@ export const consult_veiculo_info_by_uuid_veiculo = async (
     pecas: pecas,
     veiculo: veiculo,
   };
+};
+
+export const consult_peca_by_id = async (id: string): Promise<peca> => {
+  const peca = await PRISMA.peca
+    .findUniqueOrThrow({
+      where: {
+        id: parseInt(id),
+      },
+    })
+    .then((response) => response)
+    .catch(() => {
+      throw new Error("Peça não encontrada");
+    });
+
+  return peca;
 };

@@ -34,12 +34,13 @@ import { response } from "@/utils/types";
 import { ContextAlert } from "@/utils/front/provider/provider_alert";
 import { MARCA_CARROS, MARCA_MOTOS } from "@/utils/front/constants";
 import { ContextLoading } from "@/utils/front/provider/provider_loading";
-import { useQuery } from "@tanstack/react-query";
-
-const veiculos_dev = null;
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { X } from "lucide-react";
 
 export default function Veiculos() {
   const [stateNewVeiculo, setStateNewVeiculo] = useState<boolean>();
+  const [filter, setFilter] = useState("");
+  const queryClient = useQueryClient();
   const { headers } = useContext(ContextAuth);
   const { data: veiculos } = useQuery<veiculo[]>({
     queryKey: ["list_veiculos"],
@@ -69,12 +70,33 @@ export default function Veiculos() {
           </Button>
         </div>
         <div className="flex">
-          <Button className="cursor-pointer">
-            <HiOutlineFilter />
-          </Button>
           <div className="relative w-full flex items-center">
-            <Input placeholder="Modelo" className="pr-14" />
-            <GoSearch className="absolute w-[20px] h-[20px] right-5" />
+            <Input
+              placeholder="Placa"
+              className="pr-14"
+              value={filter}
+              onInput={(e) => {
+                setFilter(e.currentTarget.value);
+                const value = e.currentTarget.value.toUpperCase();
+                if (value === "") {
+                  queryClient.fetchQuery({ queryKey: ["list_veiculos"] });
+                }
+                const veiculos = queryClient.getQueryData<veiculo[]>([
+                  "list_veiculos",
+                ]);
+                const find_veiculo = veiculos?.filter((v) =>
+                  v.placa_veicular?.toUpperCase().includes(value)
+                );
+                queryClient.setQueryData(["list_veiculos"], find_veiculo);
+              }}
+            />
+            <X
+              className="absolute w-[20px] h-[20px] right-5 cursor-pointer"
+              onClick={() => {
+                setFilter("");
+                queryClient.fetchQuery({ queryKey: ["list_veiculos"] });
+              }}
+            />
           </div>
         </div>
         {veiculos ? (
@@ -112,24 +134,27 @@ function NovoVeiculo({ ...props }: React.ComponentProps<FC<DialogProps>>) {
   const { headers } = useContext(ContextAuth);
   const { drop_alert } = useContext(ContextAlert);
   const { startLoading } = useContext(ContextLoading);
-
-  const create_veiculo = async (data: veiculo) => {
-    startLoading(
-      axios
-        .put("/api/create/veiculo", data, {
-          headers: headers,
-        })
-        .then((response) => {
-          drop_alert(response.data.type, response.data.m);
-          props.onOpenChange!(false);
-          reset();
-        })
-        .catch((e) => {
-          const response: response = e.response.data;
-          drop_alert(response.type, response.m);
-        })
-    );
-  };
+  const queryClient = useQueryClient();
+  const { mutateAsync: create_veiculo } = useMutation({
+    mutationFn: async (data: veiculo) => {
+      startLoading(
+        axios
+          .put("/api/create/veiculo", data, {
+            headers: headers,
+          })
+          .then((response) => {
+            drop_alert(response.data.type, response.data.m);
+            props.onOpenChange!(false);
+            reset();
+            queryClient.fetchQuery({ queryKey: ["list_veiculos"] });
+          })
+          .catch((e) => {
+            const response: response = e.response.data;
+            drop_alert(response.type, response.m);
+          })
+      );
+    },
+  });
 
   return (
     <Dialog {...props}>
@@ -137,7 +162,7 @@ function NovoVeiculo({ ...props }: React.ComponentProps<FC<DialogProps>>) {
         <DialogTitle>Cadastrar um veiculo</DialogTitle>
         <div className="relative overflow-y-auto min-h-[550px]">
           <form
-            onSubmit={handleSubmit(create_veiculo)}
+            onSubmit={handleSubmit((data) => create_veiculo(data))}
             className="flex flex-col gap-5 absolute  w-full"
           >
             <div className="flex flex-col gap-5">

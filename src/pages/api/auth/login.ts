@@ -12,7 +12,6 @@ export default async function loginApi(
   res: NextApiResponse<response>
 ) {
   if (cors(req, res)) return;
-  log(req.body);
   const schemaLogin = z.object({
     login: z.string(),
     senha: z.string(),
