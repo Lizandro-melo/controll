@@ -1,7 +1,7 @@
-import { Button } from "@/utils/front/components/ui/button";
-import LabelInput from "@/utils/front/components/ui/label-input";
-import { formatInputLogin } from "@/utils/front/lib/utils";
-import { ContextAuth, LoginData } from "@/utils/front/provider/provider_auth";
+import { Button } from "@/presentation/components/ui/button";
+import LabelInput from "@/presentation/components/ui/label-input";
+import { formatInputLogin } from "@/presentation/lib/utils";
+import { LoginData, ContextAuth } from "@/presentation/provider/provider_auth";
 import Image from "next/image";
 import Link from "next/link";
 import { useContext } from "react";

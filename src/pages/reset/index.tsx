@@ -1,6 +1,6 @@
-import { Button } from "@/utils/front/components/ui/button";
-import LabelInput from "@/utils/front/components/ui/label-input";
-import { formatInputLogin } from "@/utils/front/lib/utils";
+import { Button } from "@/presentation/components/ui/button";
+import LabelInput from "@/presentation/components/ui/label-input";
+import { formatInputLogin } from "@/presentation/lib/utils";
 import { ContextAuth, LoginData } from "@/utils/front/provider/provider_auth";
 import Image from "next/image";
 import { FormEvent, FormEventHandler, useContext, useState } from "react";
@@ -10,7 +10,7 @@ import {
   InputOTPGroup,
   InputOTPSeparator,
   InputOTPSlot,
-} from "@/utils/front/components/ui/input-otp";
+} from "@/presentation/components/ui/input-otp";
 import Router from "next/router";
 
 export default function Reset() {

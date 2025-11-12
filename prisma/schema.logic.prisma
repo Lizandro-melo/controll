@@ -1,0 +1,222 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client_logic {
+  provider = "prisma-client-js"
+  output   = "../node_modules/@prisma/logic"
+}
+
+datasource db_logic {
+  provider = "postgresql"
+  url      = env("DATABASE_URL_LOGIC")
+}
+
+enum redes {
+  WHATSAPP
+  TELEGRAM
+  FACEBOOK
+  LINKEDIN
+  URL
+}
+
+enum status_veiculo {
+  LIVRE
+  ALUGADO
+  INATIVO
+}
+
+enum tipo_veiculo {
+  MOTO
+  CARRO
+}
+
+enum tipo_peca {
+  PNEU
+
+  PASTILHA_FREIO
+  DISCO_FREIO
+  SAPATA_FREIO
+
+  EMBREAGEM_PLATO
+  EMBREAGEM_DISCO
+  EMBREAGEM_ROLAMENTO
+  MOLAS_EMBREAGEM
+
+  CORRENTE_TRANSMISSAO
+  COROA_TRANSMISSAO
+  PINHAO_TRANSMISSAO
+
+  CORREIA_DENTADA
+  CORREIA_ALTERNADOR
+  CORREIA_ACESSORIOS
+
+  VELA_IGNICAO
+
+  AMORTECEDOR
+  AMORTECEDOR_DIANTEIRO
+  AMORTECEDOR_TRASEIRO
+  BUCHA_SUSPENSAO
+  PIVO_SUSPENSAO
+
+  TERMINAL_DIRECAO
+  ROLAMENTO_DIRECAO
+
+  COXIM_MOTOR
+  COXIM_CAMBIO
+
+  BATERIA
+  ESCOVA_ALTERNADOR
+  ESCOVA_MOTOR_PARTIDA
+  LAMPADA
+
+  ROLAMENTO_RODA
+
+  CABO_EMBREAGEM
+  CABO_ACELERADOR
+  CABO_FREIO
+
+  FILTRO_AR
+  FILTRO_OLEO
+  FILTRO_COMBUSTIVEL
+  FILTRO_CABINE
+
+  CONSUMIVEL_OLEO_MOTOR
+  CONSUMIVEL_FLUIDO_FREIO
+  CONSUMIVEL_FLUIDO_ARREFECIMENTO
+
+  MANOPLA
+  PEDALEIRA
+}
+
+// Operador
+
+model operador {
+  uuid                String                 @id @unique
+  nome_completo       String
+  num_cpf             String                 @unique
+  num_cnpj            String?
+  data_nascimento     DateTime?
+  correio_eletronico  String                 @unique
+  celularOperadors    celular_operador[]
+  enderecoOperadors   endereco_operador[]
+  redeSocialOperadors rede_social_operador[]
+  veiculos            veiculo[]
+  pecas               peca[]
+  clientes            cliente[]
+}
+
+model celular_operador {
+  id            Int      @id @default(autoincrement())
+  num_cel       String   @unique
+  status        Boolean  @default(true)
+  uuid_operador String
+  operador      operador @relation(fields: [uuid_operador], references: [uuid])
+}
+
+model endereco_operador {
+  id                 Int      @id @default(autoincrement())
+  codigo_postal      String
+  numero_residencial String
+  status             Boolean  @default(true)
+  uuid_operador      String
+  operador           operador @relation(fields: [uuid_operador], references: [uuid])
+}
+
+model rede_social_operador {
+  id            Int      @id @unique @default(autoincrement())
+  uuid_operador String
+  url           String
+  operador      operador @relation(fields: [uuid_operador], references: [uuid])
+}
+
+// Cliente
+
+model cliente {
+  uuid               String                @id @unique
+  nome_completo      String
+  num_cpf            String                @unique
+  num_cnpj           String?
+  data_nascimento    DateTime?
+  correio_eletronico String                @unique
+  observacao         String?
+  uuid_operador      String
+  data_contrato      DateTime
+  data_fim_contrato  DateTime?
+  status             Boolean               @default(true)
+  celularClientes    celular_cliente[]
+  enderecoClientes   endereco_cliente[]
+  redeSocialClientes rede_social_cliente[]
+  veiculos           veiculo[]
+  operador           operador              @relation(fields: [uuid_operador], references: [uuid])
+}
+
+model celular_cliente {
+  id           Int     @id @default(autoincrement())
+  num_cel      String  @unique
+  status       Boolean @default(true)
+  uuid_cliente String
+  cliente      cliente @relation(fields: [uuid_cliente], references: [uuid])
+}
+
+model endereco_cliente {
+  id                 Int     @id @default(autoincrement())
+  codigo_postal      String
+  numero_residencial String
+  status             Boolean @default(true)
+  uuid_cliente       String
+  cliente            cliente @relation(fields: [uuid_cliente], references: [uuid])
+}
+
+model rede_social_cliente {
+  id           Int     @id @unique @default(autoincrement())
+  uuid_cliente String
+  url          String
+  cliente      cliente @relation(fields: [uuid_cliente], references: [uuid])
+}
+
+model veiculo {
+  uuid             String         @id @unique @default(uuid())
+  modelo           String
+  marca            String
+  tipo             tipo_veiculo
+  km               Float          @default(0)
+  valor_manutencao Float?         @default(0)
+  valor_seguro     Float          @default(0)
+  valor_aluguel    Float          @default(0)
+  placa_veicular   String?
+  renavam          String?
+  chassi           String?
+  status           status_veiculo @default(LIVRE)
+  veiculo_peca     veiculo_peca[]
+  uuid_cliente     String?
+  uuid_operador    String
+  cliente          cliente?       @relation(fields: [uuid_cliente], references: [uuid])
+  operador         operador       @relation(fields: [uuid_operador], references: [uuid])
+}
+
+model peca {
+  id            Int            @id @unique @default(autoincrement())
+  tipo          tipo_peca
+  marca         String
+  km_troca      Float
+  preco_medio   Float
+  km_aviso      Float
+  logo          String?
+  uuid_operador String
+  status        Boolean        @default(true)
+  veiculo_peca  veiculo_peca[]
+  operador      operador       @relation(fields: [uuid_operador], references: [uuid])
+}
+
+model veiculo_peca {
+  id                Int       @id @unique @default(autoincrement())
+  veiculo_uuid      String
+  peca_id           Int
+  km_registro       Float
+  data_ultima_troca DateTime?
+  veiculo           veiculo   @relation(fields: [veiculo_uuid], references: [uuid])
+  peca              peca      @relation(fields: [peca_id], references: [id])
+}

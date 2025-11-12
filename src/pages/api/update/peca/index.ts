@@ -13,7 +13,7 @@ import { update_peca_by_uuid_auth } from "@/utils/server/service/update";
 
 export default async function veiculoApiFind(
   req: NextApiRequest,
-  res: NextApiResponse<response>
+  res: NextApiResponse<response>,
 ) {
   if (cors(req, res)) return;
   try {

@@ -1,6 +1,6 @@
-import { Button } from "@/utils/front/components/ui/button";
+import { Button } from "@/presentation/components/ui/button";
 import { FiBox, FiPlus } from "react-icons/fi";
-import { Input } from "@/utils/front/components/ui/input";
+import { Input } from "@/presentation/components/ui/input";
 import { HiOutlineFilter } from "react-icons/hi";
 import { GoSearch } from "react-icons/go";
 import { PiBatteryCharging, PiEngine, PiSteeringWheel } from "react-icons/pi";
@@ -21,8 +21,8 @@ import {
   Dialog,
   DialogContent,
   DialogTitle,
-} from "@/utils/front/components/ui/dialog";
-import LabelInput from "@/utils/front/components/ui/label-input";
+} from "@/presentation/components/ui/dialog";
+import LabelInput from "@/presentation/components/ui/label-input";
 import { Controller, useForm } from "react-hook-form";
 import {
   Select,
@@ -30,20 +30,22 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/utils/front/components/ui/select";
-import { Label } from "@/utils/front/components/ui/label";
+} from "@/presentation/components/ui/select";
+import { Label } from "@/presentation/components/ui/label";
 import { peca } from "@prisma/client";
 import { PiTire } from "react-icons/pi";
-import { cn } from "@/utils/front/lib/utils";
+import { cn } from "@/presentation/lib/utils";
 import { MdFilterDrama } from "react-icons/md";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import axios from "axios";
-import { ContextAuth } from "@/utils/front/provider/provider_auth";
+
 import { X } from "lucide-react";
-import { ContextAlert } from "@/utils/front/provider/provider_alert";
-import { ContextLoading } from "@/utils/front/provider/provider_loading";
+
 import { response } from "@/utils/types";
-import { TIPO_PECA } from "@/utils/front/constants";
+import { TIPO_PECA } from "@/infra/constants";
+import { ContextAlert } from "@/presentation/provider/provider_alert";
+import { ContextAuth } from "@/presentation/provider/provider_auth";
+import { ContextLoading } from "@/presentation/provider/provider_loading";
 
 export default function Pecas() {
   const [stateNewPeca, setStateNewPeca] = useState<boolean>(false);
@@ -94,7 +96,7 @@ export default function Pecas() {
                 }
                 const pecas = queryClient.getQueryData<peca[]>(["list_pecas"]);
                 const find_veiculo = pecas?.filter((v) =>
-                  v.tipo?.toUpperCase().includes(value)
+                  v.tipo?.toUpperCase().includes(value),
                 );
                 queryClient.setQueryData(["list_pecas"], find_veiculo);
               }}
@@ -153,7 +155,7 @@ function NovaPeca({ ...props }: React.ComponentProps<FC<any>>) {
           .catch((e) => {
             const response: response = e.response.data;
             drop_alert(response.type, response.m);
-          })
+          }),
       );
     },
   });
@@ -249,7 +251,7 @@ function ShowPeca({ peca }: { peca: peca }) {
         }}
         key={peca.id}
         className={cn(
-          "relative border p-5 rounded-lg flex gap-3 cursor-pointer active:scale-95 transition-all"
+          "relative border p-5 rounded-lg flex gap-3 cursor-pointer active:scale-95 transition-all",
         )}
       >
         <div className="grid place-content-center basis-0.5 grow max-lg:hidden">
@@ -320,7 +322,7 @@ function EditarPeca({
           .catch((e) => {
             const response: response = e.response.data;
             drop_alert(response.type, response.m);
-          })
+          }),
       );
     },
   });

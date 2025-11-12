@@ -12,7 +12,7 @@ export default class Assas {
 
   public constructor(
     API_KEY: string,
-    TYPE_APLICANTION: "Sandbox" | "Production"
+    TYPE_APLICANTION: "Sandbox" | "Production",
   ) {
     this.API_KEY = `$${API_KEY}`;
     this.TYPE_APLICANTION = TYPE_APLICANTION;
@@ -52,7 +52,7 @@ export default class Assas {
         { ...props },
         {
           headers: this.headers,
-        }
+        },
       )
       .then((response) => response.data.id);
   }
@@ -71,7 +71,7 @@ export default class Assas {
         },
         {
           headers: this.headers,
-        }
+        },
       )
       .then((response) => response.data.id)
       .catch((e) => log(JSON.stringify(e.response)));
@@ -88,11 +88,11 @@ export default class Assas {
             moment(response.data.data[0].dueDate).diff(
               moment.tz("America/Sao_Paulo"),
               "d",
-              true
+              true,
             ) < DAYS_EXPIRE_SUB
           ) {
             throw new Error(
-              "Não foi possível efetuar o login: existe uma fatura vencida em sua conta."
+              "Não foi possível efetuar o login: existe uma fatura vencida em sua conta.",
             );
           }
         }

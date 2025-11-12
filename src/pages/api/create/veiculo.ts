@@ -13,7 +13,7 @@ import { cors } from "../_middlewares/cors";
 
 export default async function veiculoApiCreate(
   req: NextApiRequest,
-  res: NextApiResponse<response>
+  res: NextApiResponse<response>,
 ) {
   try {
     if (cors(req, res)) return;

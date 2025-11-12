@@ -1,6 +1,6 @@
-import { ContextAlert } from "@/utils/front/provider/provider_alert";
-import { ContextAuth } from "@/utils/front/provider/provider_auth";
-import { ContextLoading } from "@/utils/front/provider/provider_loading";
+import { ContextAlert } from "@/presentation/provider/provider_alert";
+import { ContextAuth } from "@/presentation/provider/provider_auth";
+import { ContextLoading } from "@/presentation/provider/provider_loading";
 import { response } from "@/utils/types";
 import axios from "axios";
 import Router from "next/router";
@@ -17,7 +17,7 @@ export default function Session() {
     if (session) {
       startLoading(
         axios
-          .get(`/api/verify/session?session=${session}`)
+          .get(`/api/auth/session?session=${session}`)
           .then((response) => {
             Router.push(response.data.result);
             setAuth(true);
@@ -26,7 +26,7 @@ export default function Session() {
             loginOff();
             Router.push(e.response.data.result);
             setAuth(false);
-          })
+          }),
       );
     }
   }, []);

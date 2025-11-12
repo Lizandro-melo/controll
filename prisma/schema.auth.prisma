@@ -1,0 +1,58 @@
+generator client_auth {
+  provider = "prisma-client-js"
+  output   = "../node_modules/@prisma/auth"
+}
+
+datasource db_auth {
+  provider = "postgresql"
+  url      = env("DATABASE_URL_AUTH")
+}
+
+enum Tipo_User {
+  MASTER
+  ADMIN
+  OPERADOR
+  CLIENTE
+}
+
+//register
+model register_token {
+  uuid      String    @id @unique @default(uuid())
+  status    Boolean   @default(true)
+  data_util DateTime?
+}
+
+//session
+model auth {
+  uuid              String              @id @unique @default(uuid())
+  role              Tipo_User           @default(OPERADOR)
+  status            Boolean             @default(true)
+  id_sub            String?
+  id_asaas          String?
+  historicoSessions historico_session[]
+  historicoOtps     historico_otp[]
+  historicoSenhas   historico_senha[]
+}
+
+model historico_session {
+  uuid         String   @id @unique @default(uuid())
+  uuid_auth    String
+  record_login DateTime @default(now())
+  expira_time  DateTime
+  auth         auth     @relation(fields: [uuid_auth], references: [uuid])
+}
+
+model historico_otp {
+  uuid          String   @id
+  code_otp      String
+  record_create DateTime @default(now())
+  auth          auth     @relation(fields: [uuid], references: [uuid])
+}
+
+model historico_senha {
+  uuid          String   @id
+  senha         String
+  record_update DateTime @default(now())
+  status        Boolean  @default(true)
+  auth          auth     @relation(fields: [uuid], references: [uuid])
+}

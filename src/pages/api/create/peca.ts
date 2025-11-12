@@ -9,7 +9,7 @@ import { cors } from "../_middlewares/cors";
 
 export default async function pecaApiCreate(
   req: NextApiRequest,
-  res: NextApiResponse<response>
+  res: NextApiResponse<response>,
 ) {
   try {
     if (cors(req, res)) return;

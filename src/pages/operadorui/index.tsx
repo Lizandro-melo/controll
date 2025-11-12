@@ -7,8 +7,8 @@ import { FiAlertTriangle } from "react-icons/fi";
 import { useQuery } from "@tanstack/react-query";
 import { parseCookies } from "nookies";
 import axios from "axios";
-import { dash_data } from "@/utils/types";
-import { ContextAuth } from "@/utils/front/provider/provider_auth";
+import { ContextAuth } from "@/presentation/provider/provider_auth";
+import { dash_data } from "@/domain/entities";
 
 export default function Dash() {
   const { headers } = useContext(ContextAuth);
@@ -17,7 +17,7 @@ export default function Dash() {
     queryKey: ["dash"],
     queryFn: async () => {
       const dash_data: dash_data = await axios
-        .get("/api/find/dash", {
+        .get("/api/dash", {
           headers: headers,
         })
         .then((response) => response.data.result);
@@ -30,7 +30,7 @@ export default function Dash() {
       total_pecas: 0,
       total_veiculos: 0,
       total_veiculos_alugados: 0,
-      veiculos_alerta: 0,
+      veiculos_alerta: [],
     },
     refetchInterval: 15000,
   });
@@ -100,7 +100,7 @@ export default function Dash() {
       <div className="flex items-center gap-4">
         <FiAlertTriangle className="stroke-red-400" />
         <h2 className="text-lg font-semibold">
-          Alertas de Manutenção ({dash_data.veiculos_alerta})
+          Alertas de Manutenção ({dash_data.veiculos_alerta.length})
         </h2>
       </div>
       <div className="relative border item-resume p-10 rounded-lg flex flex-col justify-center items-center gap-3">
@@ -123,13 +123,13 @@ export default function Dash() {
             <li className="flex justify-between">
               <span>Com Alertas:</span>
               <span className="font-semibold text-red-400">
-                {dash_data.veiculos_alerta}
+                {dash_data.veiculos_alerta.length}
               </span>
             </li>
             <li className="flex justify-between">
               <span>Em Bom Estado:</span>
               <span className="font-semibold text-green-500">
-                {dash_data.total_veiculos - dash_data.veiculos_alerta}
+                {dash_data.total_veiculos - dash_data.veiculos_alerta.length}
               </span>
             </li>
           </ul>

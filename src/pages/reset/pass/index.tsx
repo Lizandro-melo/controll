@@ -1,6 +1,6 @@
-import { Button } from "@/utils/front/components/ui/button";
-import LabelInput from "@/utils/front/components/ui/label-input";
-import { formatInputLogin } from "@/utils/front/lib/utils";
+import { Button } from "@/presentation/components/ui/button";
+import LabelInput from "@/presentation/components/ui/label-input";
+import { formatInputLogin } from "@/presentation/lib/utils";
 import Image from "next/image";
 import { useForm } from "react-hook-form";
 

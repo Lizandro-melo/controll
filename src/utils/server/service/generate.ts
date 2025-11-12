@@ -12,7 +12,7 @@ import { register } from "@/utils/types";
 
 export const generate_session_by_uuid = async (
   senha: string,
-  uuid: string
+  uuid: string,
 ): Promise<string> => {
   const consult_senha = await consult_senhaCrypt_by_uuid(uuid);
   if (await compare(senha, consult_senha)) {

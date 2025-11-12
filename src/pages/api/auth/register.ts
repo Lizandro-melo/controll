@@ -11,15 +11,17 @@ import type { NextApiRequest, NextApiResponse } from "next";
 import { isCPF } from "validation-br";
 import z, { success } from "zod";
 import { cors } from "../_middlewares/cors";
+import { register } from "@/domain/entities";
+import { register_operador } from "@/domain/usecases/auth";
 
 export default async function registerApi(
   req: NextApiRequest,
-  res: NextApiResponse<response>
+  res: NextApiResponse<response>,
+  register: register,
 ) {
   if (cors(req, res)) return;
   try {
     const token = req.headers.authorization?.replace("Bearer ", "");
-    await validation_token_register(token!);
     const schemaRegister = z.object({
       nome_completo: z.string(),
       num_cpf: z.string(),
@@ -31,21 +33,12 @@ export default async function registerApi(
       senha: z.string(),
       senha_confirmacao: z.string(),
     });
-    const { ...props } = z.parse(schemaRegister, req.body);
-    props.num_cpf = props.num_cpf.replaceAll(".", "").replace("-", "");
-    if (props.senha !== props.senha_confirmacao)
-      res.status(400).json({
-        result: null,
-        m: "As senhas então diferentes!",
-        type: "error",
-      });
-
-    if (!isCPF(props.num_cpf))
-      res
-        .status(400)
-        .json({ result: null, m: "CPF Invalido", type: "error" });
-    await create_usuario(props);
-    await disable_token_register(token!);
+    try {
+      register = z.parse(schemaRegister, req.body);
+    } catch {
+      throw new Error("Formulário invalido!");
+    }
+    await register_operador({ token: token!, register: register });
     res.status(200).json({
       result: null,
       m: "Você foi registrado com sucesso!",

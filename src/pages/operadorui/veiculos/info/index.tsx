@@ -1,18 +1,19 @@
-import { peca, veiculo, veiculo_peca } from "@prisma/client";
+import { peca, veiculo, veiculo_peca } from "@prisma/logic";
 import { useSearchParams } from "next/navigation";
 import Router from "next/router";
 import { useContext, useLayoutEffect, useState } from "react";
-import { Button } from "@/utils/front/components/ui/button";
+import { Button } from "@/presentation/components/ui/button";
 import { FiEdit } from "react-icons/fi";
-import { cn } from "@/utils/front/lib/utils";
+import { cn } from "@/presentation/lib/utils";
 import { IoCaretDownOutline, IoCaretUpOutline } from "react-icons/io5";
 import { TiMinus } from "react-icons/ti";
 import { PiTire, PiUser } from "react-icons/pi";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { veiculo_info } from "@/utils/types";
-import { ContextAuth } from "@/utils/front/provider/provider_auth";
+
 import axios from "axios";
 import moment from "moment-timezone";
+import { ContextAuth } from "@/presentation/provider/provider_auth";
+import { veiculo_info } from "@/domain/entities";
 
 export default function Info() {
   const searchParams = useSearchParams();
@@ -22,7 +23,7 @@ export default function Info() {
     queryKey: [`veiculo-${uuid}`],
     queryFn: async () => {
       return await axios
-        .get(`/api/find/veiculos/${uuid}`, {
+        .get(`/api/veiculo/find/${uuid}`, {
           headers: headers,
         })
         .then((response) => {
@@ -176,19 +177,19 @@ export default function Info() {
           </span>
           <div className="grow basis-[100%] pt-10 pl-5 pr-5 pb-5 text-center rounded-sm border relative font-semibold flex items-center justify-end">
             <span className="absolute text-sm top-2 left-2 ">
-              {data?.cliente?.pessoa.nome_completo}
+              {data?.cliente?.nome_completo}
             </span>
 
             <div className="flex gap-3 text-xs justify-between w-full items-center">
               <div className="flex flex-col gap-2 items-start">
-                <span>CPF: {data?.cliente?.pessoa.num_cpf}</span>
+                <span>CPF: {data?.cliente?.num_cpf}</span>
                 <span>
                   DATA DE CONTRATO:{" "}
-                  {moment(data.cliente?.cliente.data_contrato).toString()}
+                  {moment(data?.cliente?.data_contrato).toString()}
                 </span>
                 <span>
                   DATA DE VENCIMENTO:{" "}
-                  {moment(data.cliente?.cliente.data_fim_contrato).toString()}
+                  {moment(data?.cliente?.data_fim_contrato).toString()}
                 </span>
                 <span>
                   TOTAL PAGO:{" "}
@@ -197,8 +198,8 @@ export default function Info() {
                     style: "currency",
                   }).format(
                     data?.veiculo?.valor_aluguel! *
-                      moment(data.cliente?.cliente.data_contrato).diff(
-                        data.cliente?.cliente.data_fim_contrato
+                      moment(data?.cliente?.data_contrato).diff(
+                        data?.cliente?.data_fim_contrato
                       )
                   )}
                 </span>

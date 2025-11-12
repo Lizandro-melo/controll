@@ -1,6 +1,6 @@
-import { Button } from "@/utils/front/components/ui/button";
+import { Button } from "@/presentation/components/ui/button";
 import { FiUsers, FiPlus } from "react-icons/fi";
-import { Input } from "@/utils/front/components/ui/input";
+import { Input } from "@/presentation/components/ui/input";
 import { HiOutlineFilter } from "react-icons/hi";
 import { GoSearch } from "react-icons/go";
 import { useState } from "react";
@@ -8,11 +8,11 @@ import {
   Dialog,
   DialogContent,
   DialogTitle,
-} from "@/utils/front/components/ui/dialog";
-import LabelInput from "@/utils/front/components/ui/label-input";
+} from "@/presentation/components/ui/dialog";
+import LabelInput from "@/presentation/components/ui/label-input";
 import { useForm } from "react-hook-form";
-import { Label } from "@/utils/front/components/ui/label";
-import { cn } from "@/utils/front/lib/utils";
+import { Label } from "@/presentation/components/ui/label";
+import { cn } from "@/presentation/lib/utils";
 import { PiUser } from "react-icons/pi";
 import { auth, pessoa } from "@prisma/client";
 

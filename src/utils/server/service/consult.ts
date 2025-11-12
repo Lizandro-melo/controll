@@ -13,7 +13,7 @@ import { dash_data, veiculo_info } from "@/utils/types";
 import Veiculos from "@/pages/operadorui/veiculos";
 
 export const consult_pessoa_uuid_by_cpf = async (
-  cpf: string
+  cpf: string,
 ): Promise<{ uuid: string; id_sub: string; id_asaas: string }> => {
   const pessoa = await PRISMA.pessoa
     .findUniqueOrThrow({ where: { num_cpf: cpf }, include: { auth: true } })
@@ -30,7 +30,7 @@ export const consult_pessoa_uuid_by_cpf = async (
 };
 
 export const consult_senhaCrypt_by_uuid = async (
-  uuid: string
+  uuid: string,
 ): Promise<string> => {
   return await PRISMA.historico_senha
     .findFirstOrThrow({
@@ -46,7 +46,7 @@ export const consult_senhaCrypt_by_uuid = async (
 };
 
 export const consult_session_by_uuid = async (
-  uuid: string
+  uuid: string,
 ): Promise<string | undefined> => {
   return await PRISMA.historico_session
     .findMany({
@@ -61,13 +61,13 @@ export const consult_session_by_uuid = async (
             moment()
               .tz("America/Sao_Paulo")
               .diff(moment(log.expira_time).tz("America/Sao_Paulo"), "d") <
-            DAYS_EXPIRE_SESSION
-        )?.uuid
+            DAYS_EXPIRE_SESSION,
+        )?.uuid,
     );
 };
 
 export const consult_uuid_auth_by_session = async (
-  session: string
+  session: string,
 ): Promise<{ uuid: string; id_sub: string; id_asaas: string }> => {
   const uuid_auth = await PRISMA.historico_session
     .findUniqueOrThrow({
@@ -103,7 +103,7 @@ export const consult_uuid_auth_by_session = async (
 };
 
 export const consult_tipo_user_by_uuid = async (
-  uuid: string
+  uuid: string,
 ): Promise<Tipo_User | undefined> => {
   return await PRISMA.auth
     .findUniqueOrThrow({
@@ -131,7 +131,7 @@ export const validation_token_register = async (token: string) => {
 };
 
 export const export_dash_data_by_uuid = async (
-  uuid: string
+  uuid: string,
 ): Promise<dash_data> => {
   const auth = await PRISMA.auth
     .findUnique({
@@ -161,7 +161,7 @@ export const export_dash_data_by_uuid = async (
   const clientes = auth?.operador_cliente.filter((row) => row.status);
   const receita_potencial = veiculos_alugados.reduce(
     (acc, v) => acc + (v.valor_aluguel || 0),
-    0
+    0,
   );
   const ticket_medio =
     veiculos_alugados.length > 0
@@ -180,7 +180,7 @@ export const export_dash_data_by_uuid = async (
 };
 
 export const consult_veiculos_by_uuid_auth = async (
-  uuid_auth: string
+  uuid_auth: string,
 ): Promise<veiculo[]> => {
   return await PRISMA.veiculo_operador
     .findMany({
@@ -197,7 +197,7 @@ export const consult_veiculos_by_uuid_auth = async (
 };
 
 export const consult_pecas_by_uuid_auth = async (
-  uuid_auth: string
+  uuid_auth: string,
 ): Promise<peca[]> => {
   return await PRISMA.peca_operador
     .findMany({
@@ -214,7 +214,7 @@ export const consult_pecas_by_uuid_auth = async (
 };
 
 export const consult_veiculo_info_by_uuid_veiculo = async (
-  uuid: string
+  uuid: string,
 ): Promise<veiculo_info> => {
   const { cliente, pecas, veiculo } = await PRISMA.veiculo
     .findUniqueOrThrow({

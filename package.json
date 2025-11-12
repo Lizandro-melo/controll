@@ -3,15 +3,17 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "prisma generate && next dev",
-    "build": "prisma generate && next build",
+    "dev": "next dev",
+    "build": "next build",
     "start": "next start",
     "lint": "biome check",
     "format": "biome format --write",
-    "migrate": "prisma migrate dev"
+    "migrate": "prisma migrate dev --schema=prisma/schema.auth.prisma && prisma migrate dev --schema=prisma/schema.logic.prisma",
+    "generate": "prisma generate --schema=prisma/schema.auth.prisma && prisma generate --schema=prisma/schema.logic.prisma",
+    "push_prisma": "prisma db push --schema=prisma/schema.auth.prisma && prisma db push --schema=prisma/schema.logic.prisma"
   },
   "dependencies": {
-    "@prisma/client": "^6.18.0",
+    "@prisma/client": "6.18.0",
     "@prisma/extension-accelerate": "^2.0.2",
     "@radix-ui/react-alert-dialog": "^1.1.15",
     "@radix-ui/react-avatar": "^1.1.10",

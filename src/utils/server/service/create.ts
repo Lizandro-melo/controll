@@ -1,4 +1,4 @@
-import { peca, veiculo } from "@prisma/client";
+import { peca, pessoa, veiculo } from "@prisma/client";
 import { PRISMA } from "../db";
 
 export const create_veiculo = async (veiculo: veiculo, uuid: string) => {
@@ -37,5 +37,21 @@ export const create_peca = async (peca: peca, uuid: string) => {
       uuid_auth: uuid,
       id_peca: id_peca,
     },
+  });
+};
+
+export const create_cliente = async (pessoa: pessoa, uuid: string) => {
+  const uuid_auth = await PRISMA.auth
+    .create({
+      data: {
+        role: "CLIENTE",
+      },
+    })
+    .then((a) => a.uuid);
+  await PRISMA.pessoa.create({
+    data: { ...pessoa, uuid: uuid_auth },
+  });
+  const cliente_create = await PRISMA.cliente.create({
+    data: {},
   });
 };

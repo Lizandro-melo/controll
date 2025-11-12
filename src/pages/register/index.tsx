@@ -1,13 +1,13 @@
-import { Button } from "@/utils/front/components/ui/button";
-import LabelInput from "@/utils/front/components/ui/label-input";
-import { formatInputLogin } from "@/utils/front/lib/utils";
-import { ContextAlert } from "@/utils/front/provider/provider_alert";
-import { ContextLoading } from "@/utils/front/provider/provider_loading";
+import { Button } from "@/presentation/components/ui/button";
+import LabelInput from "@/presentation/components/ui/label-input";
+import { formatInputLogin } from "@/presentation/lib/utils";
+import { ContextAlert } from "@/presentation/provider/provider_alert";
+import { ContextLoading } from "@/presentation/provider/provider_loading";
+
 import { register } from "@/utils/types";
 import axios from "axios";
 
 import Image from "next/image";
-import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useContext, useState } from "react";
 import { useForm } from "react-hook-form";
@@ -38,7 +38,7 @@ export default function Auth() {
         })
         .catch((e) => {
           drop_alert(e.response.data.type, e.response.data.m);
-        })
+        }),
     );
   };
 

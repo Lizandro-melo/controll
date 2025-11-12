@@ -1,7 +1,7 @@
-import { Button } from "@/utils/front/components/ui/button";
+import { Button } from "@/presentation/components/ui/button";
 import { LuCar } from "react-icons/lu";
 import { FiPlus } from "react-icons/fi";
-import { Input } from "@/utils/front/components/ui/input";
+import { Input } from "@/presentation/components/ui/input";
 import { HiOutlineFilter } from "react-icons/hi";
 import { GoSearch } from "react-icons/go";
 import { FC, useContext, useState } from "react";
@@ -9,8 +9,8 @@ import {
   Dialog,
   DialogContent,
   DialogTitle,
-} from "@/utils/front/components/ui/dialog";
-import LabelInput from "@/utils/front/components/ui/label-input";
+} from "@/presentation/components/ui/dialog";
+import LabelInput from "@/presentation/components/ui/label-input";
 import { useForm, Controller } from "react-hook-form";
 import {
   Select,
@@ -20,22 +20,24 @@ import {
   SelectLabel,
   SelectTrigger,
   SelectValue,
-} from "@/utils/front/components/ui/select";
-import { Label } from "@/utils/front/components/ui/label";
+} from "@/presentation/components/ui/select";
+import { Label } from "@/presentation/components/ui/label";
 import { veiculo } from "@prisma/client";
 import { PiMotorcycle } from "react-icons/pi";
 import Router from "next/router";
 import { DialogProps } from "@radix-ui/react-dialog";
 import { useSearchParams } from "next/navigation";
-import { cn } from "@/utils/front/lib/utils";
-import { ContextAuth } from "@/utils/front/provider/provider_auth";
+import { cn } from "@/presentation/lib/utils";
+
 import axios from "axios";
 import { response } from "@/utils/types";
-import { ContextAlert } from "@/utils/front/provider/provider_alert";
-import { MARCA_CARROS, MARCA_MOTOS } from "@/utils/front/constants";
-import { ContextLoading } from "@/utils/front/provider/provider_loading";
+
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { X } from "lucide-react";
+import { ContextAlert } from "@/presentation/provider/provider_alert";
+import { ContextAuth } from "@/presentation/provider/provider_auth";
+import { ContextLoading } from "@/presentation/provider/provider_loading";
+import { MARCA_MOTOS, MARCA_CARROS } from "@/infra/constants";
 
 export default function Veiculos() {
   const [stateNewVeiculo, setStateNewVeiculo] = useState<boolean>();
@@ -46,7 +48,7 @@ export default function Veiculos() {
     queryKey: ["list_veiculos"],
     queryFn: async () => {
       return await axios
-        .get("/api/find/veiculos/all", {
+        .get("/api/veiculo/find", {
           headers: headers,
         })
         .then((response) => {
@@ -139,7 +141,7 @@ function NovoVeiculo({ ...props }: React.ComponentProps<FC<DialogProps>>) {
     mutationFn: async (data: veiculo) => {
       startLoading(
         axios
-          .put("/api/create/veiculo", data, {
+          .put("/api/veiculo/create", data, {
             headers: headers,
           })
           .then((response) => {
