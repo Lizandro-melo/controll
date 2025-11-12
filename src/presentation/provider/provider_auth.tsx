@@ -19,7 +19,7 @@ import { ContextAlert } from "./provider_alert";
 import { NAME_COOKIE_SESSION } from "@/infra/constants";
 import Central from "../components/ui/central";
 import Nav from "../components/ui/nav";
-import { response } from "@/utils/types";
+import { response } from "@/domain/entities";
 
 const montFont = Montserrat({
   variable: "--font-geist-mono",
@@ -87,7 +87,7 @@ export function ProviderAuth({ children }: { children: ReactNode }) {
         .catch((e) => {
           const response: response = e.response.data;
           drop_alert(response.type, response.m);
-        }),
+        })
     );
   };
 

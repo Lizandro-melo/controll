@@ -18,7 +18,7 @@ export default function Auth() {
   return (
     <form
       onSubmit={handleSubmit(loginIn)}
-      className="border shadow-2xl rounded-xl p-14 max-sm:px-5 max-sm:py-14 max-sm:w-full flex justify-center items-center flex-col gap-10 w-[600px]"
+      className=" rounded-xl max-sm:px-5  max-sm:w-full flex justify-center items-center flex-col gap-10 "
     >
       <div>
         <Image
