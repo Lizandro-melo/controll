@@ -1,7 +1,6 @@
 import { ContextAlert } from "@/presentation/provider/provider_alert";
 import { ContextAuth } from "@/presentation/provider/provider_auth";
 import { ContextLoading } from "@/presentation/provider/provider_loading";
-import { response } from "@/utils/types";
 import axios from "axios";
 import Router from "next/router";
 import { parseCookies } from "nookies";

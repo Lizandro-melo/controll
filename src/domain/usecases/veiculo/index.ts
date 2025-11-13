@@ -45,3 +45,19 @@ export async function createVeiculo({
   });
   await veiculo_repository.create_veiculo({ veiculo, uuid_auth });
 }
+
+export async function updateVeiculo({
+  session,
+  veiculo_info,
+}: {
+  session: string;
+  veiculo_info: veiculo_info;
+}) {
+  const { uuid_auth } = await auth_repository.consult_uuid_auth_by_session({
+    session,
+  });
+  await veiculo_repository.update_veiculo_by_uuid_veiculo({
+    uuid_auth,
+    veiculo_info,
+  });
+}

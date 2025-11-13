@@ -173,7 +173,7 @@ function NovoVeiculo({ ...props }: React.ComponentProps<FC<DialogProps>>) {
             drop_alert(response.data.type, response.data.m);
             props.onOpenChange!(false);
             reset();
-            queryClient.fetchQuery({ queryKey: ["list_veiculos"] });
+            queryClient.invalidateQueries({ queryKey: ["list_veiculos"] });
           })
           .catch((e) => {
             const response: response = e.response.data;

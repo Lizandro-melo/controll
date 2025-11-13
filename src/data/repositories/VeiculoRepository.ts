@@ -1,9 +1,72 @@
 import { veiculo_info } from "@/domain/entities";
 import IVeiculoRepository from "@/domain/repositories/IVeiculoRepository";
 import { Prisma_logic } from "@/infra/db";
-import { veiculo } from "@prisma/logic";
+import { peca, veiculo, veiculo_peca } from "@prisma/logic";
+import { log } from "console";
 
 export default class VeiculoRepository implements IVeiculoRepository {
+  async update_veiculo_by_uuid_veiculo({
+    veiculo_info,
+    uuid_auth,
+  }: {
+    veiculo_info: veiculo_info;
+    uuid_auth: string;
+  }) {
+    return await Prisma_logic.$transaction(async (prisma) => {
+      let valor_manutencao = 0;
+
+      await prisma.veiculo_peca.deleteMany({
+        where: { veiculo_uuid: veiculo_info.veiculo.uuid },
+      });
+
+      for (const p of veiculo_info.pecas ?? []) {
+        await prisma.veiculo_peca.create({
+          data: {
+            km_registro: p.veiculo_peca.km_registro,
+            data_ultima_troca: p.veiculo_peca.data_ultima_troca,
+            status: p.veiculo_peca.status ?? true,
+            peca_id: p.peca.id,
+            veiculo_uuid: p.veiculo_peca.veiculo_uuid,
+          },
+        });
+      }
+
+      const pecas = await prisma.peca.findMany({
+        where: {
+          id: {
+            in: veiculo_info.pecas
+              ?.filter((p) => p.veiculo_peca.status)
+              .map((p) => p.veiculo_peca.peca_id),
+          },
+        },
+      });
+
+      for (const r of pecas) {
+        valor_manutencao += r.preco_medio;
+      }
+
+      await prisma.veiculo.update({
+        where: {
+          uuid: veiculo_info.veiculo.uuid,
+          uuid_operador: uuid_auth,
+        },
+        data: {
+          modelo: veiculo_info.veiculo.modelo,
+          marca: veiculo_info.veiculo.marca,
+          tipo: veiculo_info.veiculo.tipo,
+          km: Number(veiculo_info.veiculo.km),
+          valor_manutencao,
+          valor_seguro: Number(veiculo_info.veiculo.valor_seguro),
+          valor_aluguel: Number(veiculo_info.veiculo.valor_aluguel),
+          placa_veicular: veiculo_info.veiculo.placa_veicular,
+          renavam: veiculo_info.veiculo.renavam,
+          chassi: veiculo_info.veiculo.chassi,
+          uuid_cliente: veiculo_info.cliente?.uuid ?? null,
+          status: veiculo_info.cliente ? "ALUGADO" : "LIVRE",
+        },
+      });
+    });
+  }
   async create_veiculo({
     veiculo,
     uuid_auth,
@@ -29,7 +92,7 @@ export default class VeiculoRepository implements IVeiculoRepository {
     uuid_veiculo: string;
     uuid_auth: string;
   }): Promise<veiculo_info> {
-    const { cliente, pecas, veiculo } = await Prisma_logic.veiculo
+    const { cliente, veiculo_peca, veiculo } = await Prisma_logic.veiculo
       .findUniqueOrThrow({
         where: {
           uuid: uuid_veiculo,
@@ -43,17 +106,36 @@ export default class VeiculoRepository implements IVeiculoRepository {
       .then((response) => {
         return {
           veiculo: response,
-          pecas: response.veiculo_peca,
+          veiculo_peca: response.veiculo_peca,
           cliente: response.cliente,
         };
       })
       .catch(() => {
         throw new Error("Veiculo não encontrado");
       });
+    const pecas = await Prisma_logic.veiculo_peca
+      .findMany({
+        where: {
+          id: {
+            in: veiculo_peca.map((p) => p.id),
+          },
+          status: true,
+        },
+        include: {
+          peca: true,
+        },
+      })
+      .then((response) => response);
 
+    const result = pecas.map((p) => {
+      return {
+        veiculo_peca: { ...p },
+        peca: p.peca,
+      };
+    });
     return {
       cliente: cliente,
-      pecas: pecas,
+      pecas: result,
       veiculo: veiculo,
     };
   }

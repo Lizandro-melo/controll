@@ -42,7 +42,7 @@ import {
   SelectValue,
 } from "@/presentation/components/ui/select";
 import { Label } from "@/presentation/components/ui/label";
-import { peca } from "@prisma/client";
+import { peca } from "@prisma/logic";
 import { PiTire } from "react-icons/pi";
 import { cn } from "@/presentation/lib/utils";
 import { MdFilterDrama } from "react-icons/md";
@@ -417,7 +417,7 @@ function EditarPeca({
   );
 }
 
-const IconePeca: Record<string, JSX.Element> = {
+export const IconePeca: Record<string, JSX.Element> = {
   PNEU: <PiTire className="w-[35px] h-[35px]" />,
   PASTILHA_FREIO: <MdOutlineBuild className="w-[35px] h-[35px]" />,
   DISCO_FREIO: <MdOutlineBuild className="w-[35px] h-[35px]" />,

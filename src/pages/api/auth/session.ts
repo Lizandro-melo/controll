@@ -1,12 +1,8 @@
-import { ASSAS } from "@/utils/server/constants";
-import {
-  consult_tipo_user_by_uuid,
-  consult_uuid_auth_by_session,
-} from "@/utils/server/service/consult";
-import { response } from "@/utils/types";
+
 import type { NextApiRequest, NextApiResponse } from "next";
 import { cors } from "../_middlewares/cors";
 import { session_consult } from "@/domain/usecases/auth";
+import { response } from "@/domain/entities";
 
 export default async function session(
   req: NextApiRequest,

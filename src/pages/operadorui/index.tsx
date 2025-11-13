@@ -1,10 +1,10 @@
-import { ReactNode, useContext } from "react";
+import { ReactNode, useContext, useEffect } from "react";
 import { LuCar } from "react-icons/lu";
 import { FiBox } from "react-icons/fi";
 import { FiUsers } from "react-icons/fi";
 import { BsGraphUp } from "react-icons/bs";
 import { FiAlertTriangle } from "react-icons/fi";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { parseCookies } from "nookies";
 import axios from "axios";
 import { ContextAuth } from "@/presentation/provider/provider_auth";
@@ -12,6 +12,7 @@ import { dash_data } from "@/domain/entities";
 
 export default function Dash() {
   const { headers } = useContext(ContextAuth);
+  const queryClient = useQueryClient();
 
   const { isLoading, data: dash_data } = useQuery<dash_data>({
     queryKey: ["dash"],
@@ -34,6 +35,21 @@ export default function Dash() {
     },
     refetchInterval: 15000,
   });
+
+  useEffect(() => {
+    queryClient.fetchQuery({
+      queryKey: ["list_pecas"],
+      queryFn: async () => {
+        return await axios
+          .get("/api/peca/find", {
+            headers: headers,
+          })
+          .then((response) => {
+            return response.data.result;
+          });
+      },
+    });
+  }, []);
 
   const ItemResume = ({
     title,

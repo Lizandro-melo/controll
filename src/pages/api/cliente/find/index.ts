@@ -4,7 +4,7 @@ import { cors } from "../../_middlewares/cors";
 import { response } from "@/domain/entities";
 import { findAllPeca } from "@/domain/usecases/peca";
 
-export default async function veiculoApiFind(
+export default async function clienteApiFind(
   req: NextApiRequest,
   res: NextApiResponse<response>
 ) {

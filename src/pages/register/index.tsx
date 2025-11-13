@@ -1,10 +1,11 @@
+import { register } from "@/domain/entities";
 import { Button } from "@/presentation/components/ui/button";
 import LabelInput from "@/presentation/components/ui/label-input";
 import { formatInputLogin } from "@/presentation/lib/utils";
 import { ContextAlert } from "@/presentation/provider/provider_alert";
 import { ContextLoading } from "@/presentation/provider/provider_loading";
 
-import { register } from "@/utils/types";
+
 import axios from "axios";
 
 import Image from "next/image";

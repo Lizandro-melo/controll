@@ -1,9 +1,7 @@
 import { Button } from "@/presentation/components/ui/button";
 import LabelInput from "@/presentation/components/ui/label-input";
 import { formatInputLogin } from "@/presentation/lib/utils";
-import { ContextAuth, LoginData } from "@/utils/front/provider/provider_auth";
-import Image from "next/image";
-import { FormEvent, FormEventHandler, useContext, useState } from "react";
+
 import { useForm } from "react-hook-form";
 import {
   InputOTP,
@@ -12,6 +10,7 @@ import {
   InputOTPSlot,
 } from "@/presentation/components/ui/input-otp";
 import Router from "next/router";
+import { useState } from "react";
 
 export default function Reset() {
   const {

@@ -217,6 +217,7 @@ model veiculo_peca {
   peca_id           Int
   km_registro       Float
   data_ultima_troca DateTime?
+  status            Boolean   @default(true)
   veiculo           veiculo   @relation(fields: [veiculo_uuid], references: [uuid])
   peca              peca      @relation(fields: [peca_id], references: [id])
 }

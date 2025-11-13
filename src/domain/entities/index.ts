@@ -1,4 +1,4 @@
-import { veiculo, veiculo_peca, cliente, tipo_peca } from "@prisma/logic";
+import { veiculo, veiculo_peca, cliente, tipo_peca, peca } from "@prisma/logic";
 
 export type response = {
   result?: any;
@@ -30,7 +30,10 @@ export type register = {
 
 export type veiculo_info = {
   veiculo: veiculo;
-  pecas?: veiculo_peca[];
+  pecas?: {
+    veiculo_peca: veiculo_peca;
+    peca: peca;
+  }[];
   cliente?: cliente | null;
 };
 

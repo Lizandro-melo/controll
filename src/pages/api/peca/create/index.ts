@@ -1,7 +1,4 @@
 import type { NextApiRequest, NextApiResponse } from "next";
-import { consult_uuid_auth_by_session } from "@/utils/server/service/consult";
-import { create_peca } from "@/utils/server/service/create";
-
 import { peca } from "@prisma/logic";
 import { log } from "console";
 

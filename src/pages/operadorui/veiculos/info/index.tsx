@@ -21,7 +21,7 @@ import axios from "axios";
 import moment from "moment-timezone";
 import { ContextAuth } from "@/presentation/provider/provider_auth";
 import { veiculo_info } from "@/domain/entities";
-import { Plus, Save, Trash2, User, Wrench } from "lucide-react";
+import { CircleCheckBig, Plus, Save, Trash2, User, Wrench } from "lucide-react";
 import { ContextLoading } from "@/presentation/provider/provider_loading";
 import { Input } from "@/presentation/components/ui/input";
 import { ContextAlert } from "@/presentation/provider/provider_alert";
@@ -44,6 +44,9 @@ import {
 } from "@/presentation/components/ui/select";
 import { MARCA_CARROS, MARCA_MOTOS } from "@/infra/constants";
 import { DialogProps } from "@radix-ui/react-dialog";
+import { refresh } from "next/cache";
+import { IconePeca } from "../../peca";
+import { MdOutlineBuild } from "react-icons/md";
 
 export default function Info() {
   const searchParams = useSearchParams();
@@ -119,7 +122,10 @@ export default function Info() {
         <ElementDados titulo="modelo" data={veiculo?.veiculo?.modelo} />
         <ElementDados titulo="modelo" data={veiculo?.veiculo?.marca} />
         <ElementDados titulo="placa" data={veiculo?.veiculo?.placa_veicular} />
-        <ElementDados titulo="km" data={veiculo?.veiculo?.km.toString()} />
+        <ElementDados
+          titulo="km"
+          data={`${veiculo?.veiculo?.km.toString()}Km`}
+        />
         <ElementDados titulo="renavam" data={veiculo?.veiculo?.renavam} />
         <ElementDados titulo="chassi" data={veiculo?.veiculo?.chassi} />
       </div>
@@ -193,22 +199,57 @@ export default function Info() {
           return (
             <div
               key={i}
-              className="grow basis-[100%]  text-center rounded-sm border relative font-semibold "
+              className="grow basis-[100%] text-center rounded-sm border relative font-semibold overflow-hidden"
             >
-              <div className="absolute opacity-30 bg-stone-300 w-[60%] h-full rounded-sm"></div>
+              <div
+                className="absolute bg-yellow-300 h-full rounded-sm transition-all duration-500 right-0"
+                style={{
+                  width: `${Math.min(
+                    (peca.peca.km_aviso / peca.peca.km_troca) * 100,
+                    100
+                  )}%`,
+                  opacity: 0.3,
+                }}
+              >
+                <span>% AVISO</span>
+              </div>
+              <div
+                className="absolute bg-stone-300 h-full rounded-sm transition-all duration-500"
+                style={{
+                  width: `${Math.min(
+                    (peca.veiculo_peca.km_registro / peca.peca.km_troca) * 100,
+                    100
+                  )}%`,
+                  opacity: 0.3,
+                }}
+              >
+                {" "}
+              </div>
+
               <div className="relative p-5 flex items-center justify-end">
-                <span className="absolute text-xs top-2 left-2 ">
-                  TIPO DA PEÇA
+                <span className="absolute text-xs top-2 left-2">
+                  {peca.peca.tipo.replaceAll("_", " ")}
                 </span>
+
                 <div className="relative rounded-lg p-2 bg-stone-200">
-                  <PiTire
-                    className={
-                      "w-[20px] h-[20px] stroke-stone-500 fill-stone-500"
-                    }
-                  />
+                  {IconePeca[peca.peca.tipo] || (
+                    <MdOutlineBuild className="w-[35px] h-[35px]" />
+                  )}
                 </div>
+
                 <span className="absolute text-xs bottom-0.5 left-2 text-stone-400">
-                  00000km | 00000km
+                  {peca.veiculo_peca.km_registro}km | {peca.peca.km_troca}km
+                </span>
+
+                <span className="absolute text-xs bottom-0.5 right-2 text-stone-600">
+                  {Math.round(
+                    Math.min(
+                      (peca.veiculo_peca.km_registro / peca.peca.km_troca) *
+                        100,
+                      100
+                    )
+                  )}
+                  %
                 </span>
               </div>
             </div>
@@ -277,7 +318,12 @@ function EditarVeiculo({ veiculo_info, ...props }: Props) {
   const { drop_alert } = useContext(ContextAlert);
   const { startLoading } = useContext(ContextLoading);
   const queryClient = useQueryClient();
-  const pecas = watch("pecas") ?? [];
+  const [pecas, setpecas] = useState<
+    {
+      veiculo_peca: veiculo_peca;
+      peca: peca;
+    }[]
+  >([]);
 
   // // buscar lista de clientes disponíveis
   // const { data: clientes } = useQuery<cliente[]>({
@@ -292,55 +338,58 @@ function EditarVeiculo({ veiculo_info, ...props }: Props) {
   useLayoutEffect(() => {
     setValue("veiculo", veiculo_info.veiculo);
     setValue("cliente", veiculo_info.cliente);
-    setValue("pecas", veiculo_info.pecas);
-    queryClient.refetchQueries({ queryKey: ["list_pecas"] });
+    setpecas(veiculo_info.pecas ?? []);
+    queryClient.invalidateQueries({ queryKey: ["list_pecas"] });
   }, [veiculo_info]);
 
   // MUTATION atualizar veículo
   const { mutateAsync: update_veiculo } = useMutation({
     mutationFn: async (data: veiculo_info) => {
-      console.log(data);
-      // startLoading(
-      //   axios
-      //     .put(`/api/veiculo/update/${data.uuid}`, data, { headers })
-      //     .then((response) => {
-      //       drop_alert(response.data.type, response.data.m);
-      //       props.onOpenChange!(false);
-      //       queryClient.invalidateQueries({
-      //         queryKey: [`veiculo-${data.uuid}`],
-      //       });
-      //     })
-      //     .catch((e) =>
-      //       drop_alert(
-      //         e.response?.data?.type ?? "error",
-      //         e.response?.data?.m ?? "Erro ao salvar"
-      //       )
-      //     )
-      // );
+      startLoading(
+        axios
+          .put(
+            `/api/veiculo/update/${data.veiculo.uuid}`,
+            { ...data, pecas: pecas },
+            { headers }
+          )
+          .then(async (response) => {
+            drop_alert(response.data.type, response.data.m);
+            props.onOpenChange!(false);
+            queryClient.invalidateQueries({
+              queryKey: [`veiculo-${data.veiculo.uuid}`],
+            });
+          })
+          .catch((e) =>
+            drop_alert(
+              e.response?.data?.type ?? "error",
+              e.response?.data?.m ?? "Erro ao salvar"
+            )
+          )
+      );
     },
   });
 
-  // funções auxiliares das peças
-  const remove_peca = async (i: number) => {
-    setValue(
-      "pecas",
-      pecas.filter((p, index) => index !== i)
-    );
-  };
-
-  const update_peca = async (p: veiculo_peca, i: number) => {};
-
   const add_peca = useCallback(() => {
-    const nova: veiculo_peca = {
-      veiculo_uuid: veiculo_info.veiculo.uuid,
-      peca_id: 0,
-      km_registro: 0,
-      data_ultima_troca: new Date(),
+    const nova: {
+      veiculo_peca: veiculo_peca;
+      peca: peca;
+    } = {
+      veiculo_peca: {
+        veiculo_uuid: veiculo_info.veiculo.uuid,
+        peca_id: 0,
+        km_registro: 0,
+        data_ultima_troca: new Date(),
+        status: true,
+      },
+      peca: {
+        id: null,
+      },
     } as any;
 
     const nova_lista = [...pecas, nova];
-    setValue("pecas", nova_lista);
+    setpecas(nova_lista);
   }, [pecas, veiculo_info]);
+
   return (
     <Dialog {...props}>
       <DialogContent className="flex flex-col gap-10 max-h-[90vh] overflow-y-auto">
@@ -497,16 +546,38 @@ function EditarVeiculo({ veiculo_info, ...props }: Props) {
 
             {pecas.map((p, i) => (
               <div
-                key={p.id}
-                className="border rounded-md px-3 pt-10 pb-5 flex flex-col gap-10 relative"
+                key={p.veiculo_peca.id}
+                className={cn(
+                  "border rounded-md px-3 pt-10 pb-5 flex flex-col gap-10 relative",
+                  !p.veiculo_peca.status && "opacity-30"
+                )}
               >
                 <div className="absolute top-2 right-2">
                   <Button
                     variant="ghost"
                     size="sm"
-                    onClick={() => remove_peca(i)}
+                    type="button"
+                    onClick={() => {
+                      setpecas((prev) =>
+                        prev.map((x) =>
+                          x.veiculo_peca.id === p.veiculo_peca.id
+                            ? {
+                                ...x,
+                                veiculo_peca: {
+                                  ...x.veiculo_peca,
+                                  status: !x.veiculo_peca.status,
+                                },
+                              }
+                            : x
+                        )
+                      );
+                    }}
                   >
-                    <Trash2 className="w-4 h-4 text-red-500" />
+                    {p.veiculo_peca.status ? (
+                      <Trash2 className="w-4 h-4 text-red-500" />
+                    ) : (
+                      <CircleCheckBig className="w-4 h-4 text-green-500" />
+                    )}
                   </Button>
                 </div>
                 <div className="flex flex-col gap-3  max-w-[500px]">
@@ -519,9 +590,11 @@ function EditarVeiculo({ veiculo_info, ...props }: Props) {
                   </Label>
 
                   <Select
+                    defaultValue={p.peca.id ? p.peca.id.toString() : ""}
                     onValueChange={(e) => {
-                      p.peca_id = parseInt(e);
+                      p.peca.id = parseInt(e);
                     }}
+                    required
                   >
                     <SelectTrigger className="w-full">
                       <SelectValue placeholder="Selecionar a peça" />
@@ -541,23 +614,25 @@ function EditarVeiculo({ veiculo_info, ...props }: Props) {
                 <LabelInput
                   id={`KM Registro`}
                   type="number"
-                  defaultValue={p.km_registro}
+                  defaultValue={p.veiculo_peca.km_registro}
                   onChange={(e) =>
-                    (p.km_registro = parseInt(e.currentTarget.value))
+                    (p.veiculo_peca.km_registro = parseInt(
+                      e.currentTarget.value
+                    ))
                   }
                 />
                 <LabelInput
                   id={`Data Última Troca`}
                   type="date"
                   defaultValue={
-                    p.data_ultima_troca
-                      ? new Date(p.data_ultima_troca)
+                    p.veiculo_peca.data_ultima_troca
+                      ? new Date(p.veiculo_peca.data_ultima_troca)
                           .toISOString()
                           .split("T")[0]
                       : ""
                   }
                   onChange={(e) =>
-                    (p.data_ultima_troca = moment(
+                    (p.veiculo_peca.data_ultima_troca = moment(
                       e.currentTarget.value
                     ).toDate())
                   }

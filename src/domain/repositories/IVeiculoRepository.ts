@@ -7,6 +7,13 @@ export default interface IVeiculoRepository {
   }: {
     uuid_auth: string;
   }): Promise<veiculo[]>;
+  update_veiculo_by_uuid_veiculo({
+    veiculo_info,
+    uuid_auth,
+  }: {
+    veiculo_info: veiculo_info;
+    uuid_auth: string;
+  }): Promise<void>;
   consult_veiculo_info_by_uuid_veiculo({
     uuid_veiculo,
     uuid_auth,

@@ -1,9 +1,4 @@
 import type { NextApiRequest, NextApiResponse } from "next";
-import {
-  consult_tipo_user_by_uuid,
-  consult_uuid_auth_by_session,
-  export_dash_data_by_uuid,
-} from "@/utils/server/service/consult";
 import { cors } from "../_middlewares/cors";
 import { dashboard } from "@/domain/usecases/dash";
 import { dash_data, response } from "@/domain/entities";

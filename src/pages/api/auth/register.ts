@@ -1,17 +1,11 @@
-import { ASSAS } from "@/utils/server/constants";
-import { validation_token_register } from "@/utils/server/service/consult";
-import {
-  create_usuario,
-  disable_token_register,
-} from "@/utils/server/service/generate";
-import { response } from "@/utils/types";
+
 import { log } from "console";
 import moment from "moment-timezone";
 import type { NextApiRequest, NextApiResponse } from "next";
 import { isCPF } from "validation-br";
 import z, { success } from "zod";
 import { cors } from "../_middlewares/cors";
-import { register } from "@/domain/entities";
+import { register, response } from "@/domain/entities";
 import { register_operador } from "@/domain/usecases/auth";
 
 export default async function registerApi(

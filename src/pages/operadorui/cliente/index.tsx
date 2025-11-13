@@ -14,12 +14,8 @@ import { useForm } from "react-hook-form";
 import { Label } from "@/presentation/components/ui/label";
 import { cn } from "@/presentation/lib/utils";
 import { PiUser } from "react-icons/pi";
-import { auth, pessoa } from "@prisma/client";
+import { cliente } from "@prisma/logic";
 
-// --------------------
-// MOCK DE CLIENTES
-// --------------------
-export type ClienteFull = auth;
 
 export default function Clientes() {
   const [stateNewCliente, setStateNewCliente] = useState<boolean>();
