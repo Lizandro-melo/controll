@@ -203,7 +203,7 @@ function NovoVeiculo({ ...props }: React.ComponentProps<FC<DialogProps>>) {
                 />
                 <div className="flex flex-col gap-3 max-w-[500px]">
                   <Label className="after:ml-0.5 after:text-red-500 after:content-['*']">
-                    Marca
+                    Tipo
                   </Label>
                   <Controller
                     control={control}
@@ -304,7 +304,6 @@ function NovoVeiculo({ ...props }: React.ComponentProps<FC<DialogProps>>) {
 
 function ShowVeiculo({ veiculo }: { veiculo: veiculo }) {
   const searchParams = useSearchParams();
-  const classnameIcon = "w-[20px] h-[20px]";
 
   const selectVeiculo = (uuid: string) => {
     const params = new URLSearchParams(searchParams.toString());
@@ -313,73 +312,11 @@ function ShowVeiculo({ veiculo }: { veiculo: veiculo }) {
   };
 
   return (
-    // <div
-    //   key={veiculo.uuid}
-    //   onClick={() => selectVeiculo(veiculo.uuid)}
-    //   className={cn(
-    //     "relative border p-5 rounded-lg flex  gap-3 cursor-pointer active:scale-95 transition-all",
-    //     veiculo.status === "LIVRE" ? "border-green-600" : "border-red-600"
-    //   )}
-    // >
-    //   <div className="grid place-content-center grow max-lg:hidden">
-    //     {veiculo.tipo === "MOTO" && <PiMotorcycle className={classnameIcon} />}
-    //     {veiculo.tipo === "CARRO" && <LuCar className={classnameIcon} />}
-    //   </div>
-    //   <div className="flex-col text-xs gap-2 flex grow justify-center bg-amber-300">
-    //     <div
-    //       className={cn(
-    //         "absolute rounded-lg p-2 top-0.5 right-0.5",
-    //         veiculo.status === "LIVRE" ? "bg-green-600" : "bg-red-600"
-    //       )}
-    //     >
-    //       {veiculo.tipo === "MOTO" && (
-    //         <PiMotorcycle
-    //           className={"w-[20px] h-[20px] stroke-white fill-white"}
-    //         />
-    //       )}
-    //       {veiculo.tipo === "CARRO" && (
-    //         <LuCar className={"w-[20px] h-[20px] stroke-white"} />
-    //       )}
-    //     </div>
-    //     <div>
-    //       <span>Modelo: {veiculo.modelo}</span>
-    //     </div>
-    //     <div>
-    //       <span>Placa: {veiculo.placa_veicular}</span>
-    //     </div>
-    //     <div>
-    //       <span>KM: {veiculo.km}</span>
-    //     </div>
-    //     <div>
-    //       <span>Status: {veiculo.status}</span>
-    //     </div>
-    //   </div>
-    //   <div className="flex-col text-xs gap-2 flex grow justify-center bg-amber-200">
-    //     <span className="text-green-800">
-    //       Aluguel:{" "}
-    //       {Intl.NumberFormat("pt-br", {
-    //         currency: "BRL",
-    //         style: "currency",
-    //       }).format(veiculo.valor_aluguel)}
-    //     </span>
-    //     <span className="text-red-800">
-    //       Manutenção:{" "}
-    //       {Intl.NumberFormat("pt-br", {
-    //         currency: "BRL",
-    //         style: "currency",
-    //       }).format(veiculo.valor_manutencao!)}
-    //     </span>
-    //     <span className="text-red-800">
-    //       Seguro:{" "}
-    //       {Intl.NumberFormat("pt-br", {
-    //         currency: "BRL",
-    //         style: "currency",
-    //       }).format(veiculo.valor_seguro)}
-    //     </span>
-    //   </div>
-    // </div>
-    <TableRow>
-      <TableCell className="bg-blue-950 font-extrabold text-white">
+    <TableRow
+      onClick={() => selectVeiculo(veiculo.uuid)}
+      className="cursor-pointer"
+    >
+      <TableCell className="bg-blue-400 font-extrabold text-white">
         {veiculo.tipo}
       </TableCell>
       <TableCell>{veiculo.modelo}</TableCell>
@@ -389,7 +326,7 @@ function ShowVeiculo({ veiculo }: { veiculo: veiculo }) {
       <TableCell
         className={cn(
           "font-extrabold text-white",
-          veiculo.status === "ALUGADO" ? "bg-zinc-600" : "bg-red-800"
+          veiculo.status === "ALUGADO" ? "bg-zinc-400" : "bg-red-400"
         )}
       >
         {Intl.NumberFormat("pt-br", {
@@ -400,7 +337,7 @@ function ShowVeiculo({ veiculo }: { veiculo: veiculo }) {
       <TableCell
         className={cn(
           "font-extrabold text-white",
-          veiculo.valor_manutencao !== 0 ? "bg-red-800" : "bg-zinc-600"
+          veiculo.valor_manutencao !== 0 ? "bg-red-400" : "bg-zinc-400"
         )}
       >
         {Intl.NumberFormat("pt-br", {
@@ -411,7 +348,7 @@ function ShowVeiculo({ veiculo }: { veiculo: veiculo }) {
       <TableCell
         className={cn(
           "font-extrabold text-white",
-          veiculo.status === "ALUGADO" ? "bg-green-700" : "bg-zinc-600"
+          veiculo.status === "ALUGADO" ? "bg-green-400" : "bg-zinc-400"
         )}
       >
         {Intl.NumberFormat("pt-br", {
@@ -422,7 +359,7 @@ function ShowVeiculo({ veiculo }: { veiculo: veiculo }) {
       <TableCell
         className={cn(
           "font-extrabold text-white",
-          veiculo.status === "LIVRE" ? "bg-green-700" : "bg-red-800"
+          veiculo.status === "LIVRE" ? "bg-green-400" : "bg-red-400"
         )}
       >
         {veiculo.status}

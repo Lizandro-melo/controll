@@ -1,22 +1,23 @@
-import type { dash_data, response } from "@/utils/types";
 import type { NextApiRequest, NextApiResponse } from "next";
 import { consult_uuid_auth_by_session } from "@/utils/server/service/consult";
 import { create_peca } from "@/utils/server/service/create";
 
-import { peca } from "@prisma/client";
+import { peca } from "@prisma/logic";
 import { log } from "console";
-import { cors } from "../_middlewares/cors";
+
+import { response } from "@/domain/entities";
+import { cors } from "../../_middlewares/cors";
+import { createPeca } from "@/domain/usecases/peca";
 
 export default async function pecaApiCreate(
   req: NextApiRequest,
-  res: NextApiResponse<response>,
+  res: NextApiResponse<response>
 ) {
   try {
     if (cors(req, res)) return;
     const peca: peca = req.body;
-    const session_key = req.headers.authorization?.replace("Bearer ", "");
-    const { uuid } = await consult_uuid_auth_by_session(session_key!);
-    await create_peca(peca, uuid);
+    const session = req.headers.authorization?.replace("Bearer ", "");
+    await createPeca({ session: session!, peca: peca });
     res
       .status(200)
       .json({ result: null, m: "Peça criada com sucesso", type: "sucess" });

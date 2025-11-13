@@ -1,4 +1,3 @@
-import type { dash_data, response, veiculo_info } from "@/utils/types";
 import type { NextApiRequest, NextApiResponse } from "next";
 import {
   consult_peca_by_id,
@@ -9,18 +8,20 @@ import {
 import { peca, veiculo } from "@prisma/client";
 import { log } from "console";
 import { cors } from "../../_middlewares/cors";
+import { update_peca_by_uuid_auth } from "@/utils/server/service/update";
+import { response } from "@/domain/entities";
+import { updatePeca } from "@/domain/usecases/peca";
 
 export default async function veiculoApiFind(
   req: NextApiRequest,
-  res: NextApiResponse<response>,
+  res: NextApiResponse<response>
 ) {
   if (cors(req, res)) return;
   try {
-    const session_key = req.headers.authorization?.replace("Bearer ", "");
-    await consult_uuid_auth_by_session(session_key!);
-    const id = req.query.id as string;
-    const peca: peca = await consult_peca_by_id(id!);
-    res.status(200).json({ result: peca, type: "sucess" });
+    const peca = req.body;
+    const session = req.headers.authorization?.replace("Bearer ", "");
+    await updatePeca({ session: session!, peca: peca });
+    res.status(200).json({ m: "Peça atualizada", type: "sucess" });
   } catch (e: any) {
     log(e.message);
     res.status(403).json({ m: e.message, type: "error" });

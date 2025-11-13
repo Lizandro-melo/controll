@@ -1,6 +1,16 @@
 import { Button } from "@/presentation/components/ui/button";
 import { FiBox, FiPlus } from "react-icons/fi";
 import { Input } from "@/presentation/components/ui/input";
+import {
+  Table,
+  TableBody,
+  TableCaption,
+  TableCell,
+  TableFooter,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/presentation/components/ui/table";
 import { HiOutlineFilter } from "react-icons/hi";
 import { GoSearch } from "react-icons/go";
 import { PiBatteryCharging, PiEngine, PiSteeringWheel } from "react-icons/pi";
@@ -41,11 +51,11 @@ import axios from "axios";
 
 import { X } from "lucide-react";
 
-import { response } from "@/utils/types";
 import { TIPO_PECA } from "@/infra/constants";
 import { ContextAlert } from "@/presentation/provider/provider_alert";
 import { ContextAuth } from "@/presentation/provider/provider_auth";
 import { ContextLoading } from "@/presentation/provider/provider_loading";
+import { response } from "@/domain/entities";
 
 export default function Pecas() {
   const [stateNewPeca, setStateNewPeca] = useState<boolean>(false);
@@ -56,7 +66,7 @@ export default function Pecas() {
     queryKey: ["list_pecas"],
     queryFn: async () => {
       return await axios
-        .get("/api/find/pecas/all", {
+        .get("/api/peca/find", {
           headers: headers,
         })
         .then((response) => {
@@ -96,7 +106,7 @@ export default function Pecas() {
                 }
                 const pecas = queryClient.getQueryData<peca[]>(["list_pecas"]);
                 const find_veiculo = pecas?.filter((v) =>
-                  v.tipo?.toUpperCase().includes(value),
+                  v.tipo?.toUpperCase().includes(value)
                 );
                 queryClient.setQueryData(["list_pecas"], find_veiculo);
               }}
@@ -112,11 +122,22 @@ export default function Pecas() {
         </div>
 
         {pecas && pecas.length > 0 ? (
-          <div className="flex flex-col gap-5">
-            {pecas.map((peca, i) => (
-              <ShowPeca peca={peca} key={i} />
-            ))}
-          </div>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>TIPO</TableHead>
+                <TableHead>MARCA</TableHead>
+                <TableHead>KM DE TROCA</TableHead>
+                <TableHead>KM PARA AVISO</TableHead>
+                <TableHead>PREÇO</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {pecas.map((peca, i) => (
+                <ShowPeca peca={peca} key={i} />
+              ))}
+            </TableBody>
+          </Table>
         ) : (
           <div className="relative border item-resume p-10 rounded-lg flex flex-col justify-center items-center gap-3">
             <FiBox className="stroke-stone-500 w-[30px] h-[30px]" />
@@ -143,7 +164,7 @@ function NovaPeca({ ...props }: React.ComponentProps<FC<any>>) {
     mutationFn: async (data: peca) => {
       startLoading(
         axios
-          .put("/api/create/peca", data, {
+          .put("/api/peca/create", data, {
             headers: headers,
           })
           .then((response) => {
@@ -155,7 +176,7 @@ function NovaPeca({ ...props }: React.ComponentProps<FC<any>>) {
           .catch((e) => {
             const response: response = e.response.data;
             drop_alert(response.type, response.m);
-          }),
+          })
       );
     },
   });
@@ -244,46 +265,28 @@ function ShowPeca({ peca }: { peca: peca }) {
         peca={pecaSelect}
         key={peca.id}
       />
-      <div
+      <TableRow
         onClick={() => {
           setPecaSelect(peca);
           setStateEditPeca(true);
         }}
-        key={peca.id}
-        className={cn(
-          "relative border p-5 rounded-lg flex gap-3 cursor-pointer active:scale-95 transition-all",
-        )}
+        className="cursor-pointer"
       >
-        <div className="grid place-content-center basis-0.5 grow max-lg:hidden">
-          {IconePeca[peca.tipo] || (
-            <MdOutlineBuild className="w-[35px] h-[35px]" />
-          )}
-        </div>
-
-        <div className="basis-0.5 flex-col text-xs gap-2 flex grow justify-center">
-          <div>
-            <span>Tipo: {peca.tipo}</span>
-          </div>
-          <div>
-            <span>Marca: {peca.marca}</span>
-          </div>
-          <div>
-            <span>Troca: {peca.km_troca.toLocaleString()} km</span>
-          </div>
-          <div>
-            <span>Aviso: {peca.km_aviso.toLocaleString()} km</span>
-          </div>
-        </div>
-        <div className="basis-0.5 flex-col text-xs gap-2 flex grow justify-center">
-          <span className="text-green-800">
-            Preço Médio:{" "}
-            {Intl.NumberFormat("pt-br", {
-              currency: "BRL",
-              style: "currency",
-            }).format(peca.preco_medio)}
-          </span>
-        </div>
-      </div>
+        <TableCell className="bg-blue-400 font-extrabold text-white">
+          {peca.tipo.replaceAll("_", " ")}
+        </TableCell>
+        <TableCell>{peca.marca}</TableCell>
+        <TableCell>{peca.km_troca} Km</TableCell>
+        <TableCell className="bg-yellow-400 font-extrabold text-white">
+          {peca.km_aviso} Km
+        </TableCell>
+        <TableCell className="bg-red-400 font-extrabold text-white">
+          {Intl.NumberFormat("pt-br", {
+            currency: "BRL",
+            style: "currency",
+          }).format(peca.preco_medio!)}
+        </TableCell>
+      </TableRow>
     </>
   );
 }
@@ -310,7 +313,7 @@ function EditarPeca({
     mutationFn: async (data: peca) => {
       startLoading(
         axios
-          .post(`/api/update/peca`, data, {
+          .post(`/api/peca/update`, data, {
             headers: headers,
           })
           .then((response) => {
@@ -322,7 +325,7 @@ function EditarPeca({
           .catch((e) => {
             const response: response = e.response.data;
             drop_alert(response.type, response.m);
-          }),
+          })
       );
     },
   });
@@ -387,21 +390,21 @@ function EditarPeca({
                   {...register("km_troca")}
                   id="KM para troca"
                   placeholder="Ex: 20000"
-                  type="number"
+                  type="text"
                   required
                 />
                 <LabelInput
                   {...register("km_aviso")}
                   id="KM para aviso"
                   placeholder="Ex: 18000"
-                  type="number"
+                  type="text"
                   required
                 />
                 <LabelInput
                   {...register("preco_medio")}
                   id="Preço médio (R$)"
                   placeholder="Ex: 450"
-                  type="number"
+                  type="text"
                   required
                 />
               </div>

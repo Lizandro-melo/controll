@@ -71,7 +71,7 @@ export default function Nav({ children }: { children: ReactNode }) {
         <ItemList
           icon={<FiBox className="w-[20px] h-[20px]" />}
           title="Peças"
-          path="/operadorui/part"
+          path="/operadorui/peca"
         />
         <ItemList
           icon={<FiUsers className="w-[20px] h-[20px]" />}
