@@ -31,12 +31,13 @@ export default class VeiculoRepository implements IVeiculoRepository {
         });
       }
 
+      const veiculo_pecas = veiculo_info.pecas;
+
       const pecas = await prisma.peca.findMany({
         where: {
           id: {
-            in: veiculo_info.pecas
-              ?.filter((p) => p.veiculo_peca.status)
-              .map((p) => p.veiculo_peca.peca_id),
+            in: veiculo_pecas?.filter((p) => p.veiculo_peca.status)
+              .map((p) => p.peca.id),
           },
         },
       });

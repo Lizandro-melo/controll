@@ -11,8 +11,8 @@ export default async function clienteApiFind(
   if (cors(req, res)) return;
   try {
     const session = req.headers.authorization?.replace("Bearer ", "");
-    const pecas: peca[] = await findAllPeca({ session: session! });
-    res.status(200).json({ result: pecas, type: "sucess" });
+    
+    res.status(200).json({ result: null, type: "sucess" });
   } catch (e) {
     res.status(403).json({ m: "Token Invalido", type: "error" });
   }

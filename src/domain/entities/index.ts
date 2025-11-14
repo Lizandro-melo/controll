@@ -1,4 +1,10 @@
-import { veiculo, veiculo_peca, cliente, tipo_peca, peca } from "@prisma/logic";
+import type {
+  veiculo,
+  veiculo_peca,
+  cliente,
+  tipo_peca,
+  peca,
+} from "@prisma/logic";
 
 export type response = {
   result?: any;
@@ -49,3 +55,13 @@ export type create_cliente = {
   data_contrato: string;
   data_fim_contrato: string;
 };
+
+export type find_cliente = {
+  nome_completo: string;
+  num_cpf: string;
+  correio_eletronico: string;
+  num_cel: string;
+  data_contrato: string;
+  data_fim_contrato: string;
+  veiculo_vinculado: boolean;
+}[];

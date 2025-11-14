@@ -339,7 +339,18 @@ function EditarVeiculo({ veiculo_info, ...props }: Props) {
     setValue("veiculo", veiculo_info.veiculo);
     setValue("cliente", veiculo_info.cliente);
     setpecas(veiculo_info.pecas ?? []);
-    queryClient.invalidateQueries({ queryKey: ["list_pecas"] });
+    queryClient.fetchQuery({
+      queryKey: ["list_pecas"],
+      queryFn: async () => {
+        return await axios
+          .get("/api/peca/find", {
+            headers: headers,
+          })
+          .then((response) => {
+            return response.data.result;
+          });
+      },
+    });
   }, [veiculo_info]);
 
   // MUTATION atualizar veículo

@@ -36,21 +36,6 @@ export default function Dash() {
     refetchInterval: 15000,
   });
 
-  useEffect(() => {
-    queryClient.fetchQuery({
-      queryKey: ["list_pecas"],
-      queryFn: async () => {
-        return await axios
-          .get("/api/peca/find", {
-            headers: headers,
-          })
-          .then((response) => {
-            return response.data.result;
-          });
-      },
-    });
-  }, []);
-
   const ItemResume = ({
     title,
     data,

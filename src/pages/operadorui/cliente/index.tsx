@@ -3,7 +3,7 @@ import { FiUsers, FiPlus } from "react-icons/fi";
 import { Input } from "@/presentation/components/ui/input";
 import { HiOutlineFilter } from "react-icons/hi";
 import { GoSearch } from "react-icons/go";
-import { useState } from "react";
+import { FC, useContext, useState } from "react";
 import {
   Dialog,
   DialogContent,
@@ -15,14 +15,35 @@ import { Label } from "@/presentation/components/ui/label";
 import { cn } from "@/presentation/lib/utils";
 import { PiUser } from "react-icons/pi";
 import { cliente } from "@prisma/logic";
-
+import { create_cliente, find_cliente, response } from "@/domain/entities";
+import moment from "moment-timezone";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { ContextAlert } from "@/presentation/provider/provider_alert";
+import { ContextLoading } from "@/presentation/provider/provider_loading";
+import axios from "axios";
+import { ContextAuth } from "@/presentation/provider/provider_auth";
 
 export default function Clientes() {
   const [stateNewCliente, setStateNewCliente] = useState<boolean>();
+  const { headers } = useContext(ContextAuth);
+  const { drop_alert } = useContext(ContextAlert);
+  const { startLoading } = useContext(ContextLoading);
+  const { data: list_clientes } = useQuery<find_cliente>({
+    queryKey: ["list_clientes"],
+    queryFn: async () => {
+      return await axios
+        .get("/api/cliente/create", {
+          headers: headers,
+        })
+        .then((response) => {
+          return response.data.result;
+        });
+    },
+  });
 
   return (
     <>
-      {/* <NovoCliente open={stateNewCliente} onOpenChange={setStateNewCliente} /> */}
+      <NovoCliente open={stateNewCliente} onOpenChange={setStateNewCliente} />
       <div className="flex flex-col gap-5">
         <div className="flex justify-between">
           <h1 className="text-2xl font-bold">Gestão de Clientes</h1>
@@ -61,53 +82,109 @@ export default function Clientes() {
   );
 }
 
-// function NovoCliente({ ...props }: React.ComponentProps<FC<any>>) {
-//   const { register, handleSubmit } = useForm<ClienteFull>();
+function NovoCliente({ ...props }: React.ComponentProps<FC<any>>) {
+  const { register, handleSubmit, reset } = useForm<create_cliente>();
 
-//   return (
-//     <Dialog {...props}>
-//       <DialogContent className="flex flex-col gap-10 ">
-//         <DialogTitle>Cadastrar novo cliente</DialogTitle>
-//         <div className="relative overflow-y-auto min-h-[550px]">
-//           <form className="flex flex-col gap-5 absolute w-full">
-//             <div className="flex flex-col gap-5">
-//               <div className="border rounded-sm flex flex-col gap-5 p-5">
-//                 <LabelInput {...register("nome")} id="Nome de usuário" />
-//                 <LabelInput {...register("email")} id="E-mail de acesso" />
-//                 <LabelInput
-//                   {...register("codigo_registro")}
-//                   id="Código de registro"
-//                 />
-//                 <LabelInput {...register("senha")} id="Senha" type="password" />
-//               </div>
-//               <div className="border rounded-sm flex flex-col gap-5 p-5">
-//                 <LabelInput
-//                   {...register("pessoa.0.nome_completo" as const)}
-//                   id="Nome completo"
-//                 />
-//                 <LabelInput {...register("pessoa.0.cpf" as const)} id="CPF" />
-//                 <LabelInput
-//                   {...register("pessoa.0.numero_celular" as const)}
-//                   id="Celular"
-//                 />
-//                 <LabelInput {...register("pessoa.0.cep" as const)} id="CEP" />
-//                 <Label> Status </Label>
-//                 <select
-//                   {...register("status")}
-//                   className="border rounded-sm p-2 text-sm outline-none"
-//                 >
-//                   <option value="true">Ativo</option>
-//                   <option value="false">Inativo</option>
-//                 </select>
-//               </div>
-//             </div>
-//             <Button>Cadastrar</Button>
-//           </form>
-//         </div>
-//       </DialogContent>
-//     </Dialog>
-//   );
-// }
+  const queryClient = useQueryClient();
+  const { drop_alert } = useContext(ContextAlert);
+  const { startLoading } = useContext(ContextLoading);
+  const { headers } = useContext(ContextAuth);
+  const { mutateAsync: cadastrar } = useMutation({
+    mutationFn: async (create_cliente: create_cliente) => {
+      startLoading(
+        axios
+          .put("/api/cliente/create", create_cliente, {
+            headers: headers,
+          })
+          .then((response) => {
+            drop_alert(response.data.type, response.data.m);
+            props.onOpenChange!(false);
+            reset();
+            queryClient.invalidateQueries({ queryKey: ["list_clientes"] });
+          })
+          .catch((e) => {
+            const response: response = e.response.data;
+            drop_alert(response.type, response.m);
+          })
+      );
+    },
+  });
+
+  return (
+    <Dialog {...props}>
+      <DialogContent className="flex flex-col gap-10 ">
+        <DialogTitle>Cadastrar novo cliente</DialogTitle>
+        <div className="relative overflow-y-auto min-h-[550px]">
+          <form
+            className="flex flex-col gap-5 absolute w-full"
+            onSubmit={handleSubmit((data) => cadastrar(data))}
+          >
+            <div className="flex flex-col gap-5">
+              <div>
+                <span>Dados pessoais</span>
+                <div className="border rounded-sm flex flex-col gap-5 p-5">
+                  <LabelInput
+                    required
+                    {...register("nome_completo")}
+                    id="Nome do cliente"
+                  />
+                  <LabelInput
+                    required
+                    {...register("data_nascimento")}
+                    type="date"
+                    id="Data de nascimento"
+                    value={new Date().toISOString().split("T")[0]}
+                  />
+                  <LabelInput required {...register("num_cpf")} id="CPF" />
+                  <LabelInput
+                    required
+                    {...register("num_cel")}
+                    id="Numero de celular"
+                    type="tel"
+                  />
+                  <LabelInput
+                    required
+                    {...register("correio_eletronico")}
+                    id="E-mail"
+                    type="email"
+                  />
+                </div>
+              </div>
+              <div>
+                <span>Endereço</span>
+                <div className="border rounded-sm flex flex-col gap-5 p-5">
+                  <LabelInput
+                    required
+                    {...register("numero_residencial")}
+                    id="CEP"
+                  />
+                  <LabelInput required {...register("codigo_postal")} id="N°" />
+                </div>
+              </div>
+              <div>
+                <span>Dados de contrato</span>
+                <div className="border rounded-sm flex flex-col gap-5 p-5">
+                  <LabelInput
+                    required
+                    {...register("data_contrato")}
+                    id="Data de inicio do contrato"
+                    type="date"
+                  />
+                  <LabelInput
+                    {...register("data_fim_contrato")}
+                    id="Data final"
+                    type="date"
+                  />
+                </div>
+              </div>
+            </div>
+            <Button>Cadastrar</Button>
+          </form>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+}
 
 // function ShowCliente({ cliente }: { cliente: ClienteFull }) {
 //   const pessoa = cliente.pessoa[0];
