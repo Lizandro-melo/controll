@@ -137,7 +137,7 @@ model rede_social_operador {
 model cliente {
   uuid               String                @id @unique
   nome_completo      String
-  num_cpf            String                
+  num_cpf            String
   num_cnpj           String?
   data_nascimento    DateTime?
   correio_eletronico String                @unique

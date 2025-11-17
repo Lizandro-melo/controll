@@ -7,11 +7,11 @@ export default function LabelInput({
   ...propsInput
 }: React.InputHTMLAttributes<HTMLInputElement>) {
   return (
-    <div className="flex flex-col gap-3  max-w-[500px]">
+    <div className={`flex flex-col gap-3 w-full ${propsInput.className}`}>
       <Label
         className={cn(
           propsInput.required &&
-            "after:ml-0.5 after:text-red-500 after:content-['*']",
+            "after:ml-0.5 after:text-red-500 after:content-['*']"
         )}
         htmlFor={propsInput.id}
       >

@@ -1,6 +1,7 @@
 import AuthRepository from "@/data/repositories/AuthRepository";
 import ClienteRepository from "@/data/repositories/ClienteRepository";
-import { create_cliente } from "@/domain/entities";
+import { cliente_info, create_cliente, find_cliente } from "@/domain/entities";
+import { log } from "console";
 import { isCPF } from "validation-br";
 
 const auth_repository = new AuthRepository();
@@ -26,7 +27,36 @@ export async function createCliente({
   });
   try {
     await cliente_repository.register_cliente({ uuid_auth, create_cliente });
-  } catch {
+  } catch (e) {
     throw new Error("Não foi possivel cadastrar o cliente");
   }
+}
+
+export async function findAllCliente({
+  session,
+}: {
+  session: string;
+}): Promise<find_cliente> {
+  const { uuid_auth } = await auth_repository.consult_uuid_auth_by_session({
+    session,
+  });
+  return await cliente_repository.consult_clientes_by_uuid_operador({
+    uuid_auth,
+  });
+}
+
+export async function findUniqueCliente({
+  session,
+  uuid_cliente,
+}: {
+  session: string;
+  uuid_cliente: string;
+}): Promise<cliente_info> {
+  const { uuid_auth } = await auth_repository.consult_uuid_auth_by_session({
+    session,
+  });
+  return await cliente_repository.consult_cliente_info_by_uuid_cliente({
+    uuid_cliente,
+    uuid_auth,
+  });
 }

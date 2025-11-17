@@ -5,6 +5,16 @@ import { HiOutlineFilter } from "react-icons/hi";
 import { GoSearch } from "react-icons/go";
 import { FC, useContext, useState } from "react";
 import {
+  Table,
+  TableBody,
+  TableCaption,
+  TableCell,
+  TableFooter,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/presentation/components/ui/table";
+import {
   Dialog,
   DialogContent,
   DialogTitle,
@@ -22,6 +32,8 @@ import { ContextAlert } from "@/presentation/provider/provider_alert";
 import { ContextLoading } from "@/presentation/provider/provider_loading";
 import axios from "axios";
 import { ContextAuth } from "@/presentation/provider/provider_auth";
+import { useSearchParams } from "next/navigation";
+import Router from "next/router";
 
 export default function Clientes() {
   const [stateNewCliente, setStateNewCliente] = useState<boolean>();
@@ -32,7 +44,7 @@ export default function Clientes() {
     queryKey: ["list_clientes"],
     queryFn: async () => {
       return await axios
-        .get("/api/cliente/create", {
+        .get("/api/cliente/find", {
           headers: headers,
         })
         .then((response) => {
@@ -68,15 +80,35 @@ export default function Clientes() {
           </div>
         </div>
 
-        <div className="relative border item-resume p-10 rounded-lg flex flex-col justify-center items-center gap-3">
-          <FiUsers className="stroke-stone-500 w-[30px] h-[30px]" />
-          <div className="flex flex-col items-center">
-            <span className="font-semibold">Nenhum cliente cadastrado</span>
-            <span className="font-semibold text-sm text-stone-400">
-              Comece cadastrando seus clientes na plataforma
-            </span>
+        {list_clientes ? (
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>CPF</TableHead>
+                <TableHead>NOME</TableHead>
+                <TableHead>CELULAR</TableHead>
+                <TableHead>E-MAIL</TableHead>
+                <TableHead>DATA DE CONTRATO</TableHead>
+                <TableHead>DATA DE FIM DO CONTRATO</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {list_clientes.map((c, i) => {
+                return <ShowCliente {...c} />;
+              })}
+            </TableBody>
+          </Table>
+        ) : (
+          <div className="relative border item-resume p-10 rounded-lg flex flex-col justify-center items-center gap-3">
+            <FiUsers className="stroke-stone-500 w-[30px] h-[30px]" />
+            <div className="flex flex-col items-center">
+              <span className="font-semibold">Nenhum cliente cadastrado</span>
+              <span className="font-semibold text-sm text-stone-400">
+                Comece cadastrando seus clientes na plataforma
+              </span>
+            </div>
           </div>
-        </div>
+        )}
       </div>
     </>
   );
@@ -133,7 +165,6 @@ function NovoCliente({ ...props }: React.ComponentProps<FC<any>>) {
                     {...register("data_nascimento")}
                     type="date"
                     id="Data de nascimento"
-                    value={new Date().toISOString().split("T")[0]}
                   />
                   <LabelInput required {...register("num_cpf")} id="CPF" />
                   <LabelInput
@@ -186,40 +217,40 @@ function NovoCliente({ ...props }: React.ComponentProps<FC<any>>) {
   );
 }
 
-// function ShowCliente({ cliente }: { cliente: ClienteFull }) {
-//   const pessoa = cliente.pessoa[0];
+function ShowCliente({
+  ...props
+}: {
+  uuid: string;
+  nome_completo: string;
+  num_cpf: string;
+  correio_eletronico: string;
+  num_cel: string;
+  data_contrato: string;
+  data_fim_contrato: string;
+}) {
+  const searchParams = useSearchParams();
 
-//   return (
-//     <div
-//       key={cliente.uuid}
-//       className={cn(
-//         "relative border p-5 rounded-lg flex gap-3 cursor-pointer active:scale-95 transition-all",
-//         cliente.status ? "border-green-600" : "border-red-600",
-//       )}
-//     >
-//       <div className="grid place-content-center basis-0.5 grow max-lg:hidden">
-//         <PiUser className="w-[35px] h-[35px]" />
-//       </div>
-//       <div className="basis-0.5 flex-col text-xs gap-2 flex grow justify-center">
-//         <div>
-//           <span>Nome: {pessoa?.nome_completo}</span>
-//         </div>
-//         <div>
-//           <span>CPF: {pessoa?.cpf}</span>
-//         </div>
-//         <div>
-//           <span>Celular: {pessoa?.numero_celular}</span>
-//         </div>
-//         <div>
-//           <span>Status: {cliente.status ? "Ativo" : "Inativo"}</span>
-//         </div>
-//       </div>
-//       <div className="basis-0.5 flex-col text-xs gap-2 flex grow justify-center">
-//         <span className="text-stone-600">E-mail: {cliente.email}</span>
-//         <span className="text-stone-400">
-//           Código: {cliente.codigo_registro}
-//         </span>
-//       </div>
-//     </div>
-//   );
-// }
+  const selectCliente = (uuid: string) => {
+    const params = new URLSearchParams(searchParams.toString());
+    params.set("uuid-cliente", `${uuid}`);
+    Router.push(`/operadorui/cliente/info?${params.toString()}`);
+  };
+
+  return (
+    <TableRow
+      onClick={() => selectCliente(props.uuid)}
+      className="cursor-pointer"
+    >
+      <TableCell className="bg-blue-400 font-extrabold text-white">
+        {props.num_cpf.replace(/(\d{3})(\d{3})(\d{3})(\d{1,2})/, "$1.$2.$3-$4")}
+      </TableCell>
+      <TableCell>{props.nome_completo}</TableCell>
+      <TableCell>
+        {props.num_cel.replace(/(\d{2})(\d{5})(\d{4})/, "($1) $2-$3")}
+      </TableCell>
+      <TableCell>{props.correio_eletronico}</TableCell>
+      <TableCell>{props.data_contrato}</TableCell>
+      <TableCell>{props.data_fim_contrato}</TableCell>
+    </TableRow>
+  );
+}

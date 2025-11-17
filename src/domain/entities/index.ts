@@ -4,6 +4,8 @@ import type {
   cliente,
   tipo_peca,
   peca,
+  celular_cliente,
+  endereco_cliente,
 } from "@prisma/logic";
 
 export type response = {
@@ -40,7 +42,13 @@ export type veiculo_info = {
     veiculo_peca: veiculo_peca;
     peca: peca;
   }[];
-  cliente?: cliente | null;
+  cliente?: {
+    nome_completo: string;
+    num_cpf: string;
+    data_contrato: string;
+    data_fim_contrato: string;
+    total_pagar: number;
+  };
 };
 
 export type create_cliente = {
@@ -57,11 +65,18 @@ export type create_cliente = {
 };
 
 export type find_cliente = {
+  uuid: string;
   nome_completo: string;
   num_cpf: string;
   correio_eletronico: string;
   num_cel: string;
   data_contrato: string;
   data_fim_contrato: string;
-  veiculo_vinculado: boolean;
 }[];
+
+export type cliente_info = {
+  cliente: cliente;
+  telefones: celular_cliente[];
+  enderecos: endereco_cliente[];
+  veiculos_vinculados: veiculo[];
+};

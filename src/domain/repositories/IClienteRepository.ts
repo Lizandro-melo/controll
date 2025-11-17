@@ -1,4 +1,4 @@
-import { create_cliente, find_cliente } from "../entities";
+import { cliente_info, create_cliente, find_cliente } from "../entities";
 import { cliente } from "@prisma/logic";
 
 export default interface IClienteRepository {
@@ -17,8 +17,14 @@ export default interface IClienteRepository {
     uuid_auth: string;
   }): Promise<void>;
   consult_clientes_by_uuid_operador({
-    uuid_cliente,
+    uuid_auth,
+  }: {
+    uuid_auth: string;
+  }): Promise<find_cliente>;
+  consult_cliente_info_by_uuid_cliente({
+    ...props
   }: {
     uuid_cliente: string;
-  }): Promise<find_cliente>;
+    uuid_auth: string;
+  }): Promise<cliente_info>;
 }

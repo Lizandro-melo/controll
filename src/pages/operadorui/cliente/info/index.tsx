@@ -33,7 +33,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import axios from "axios";
 import moment from "moment-timezone";
 import { ContextAuth } from "@/presentation/provider/provider_auth";
-import { find_cliente, veiculo_info } from "@/domain/entities";
+import { cliente_info, find_cliente, veiculo_info } from "@/domain/entities";
 import {
   CheckIcon,
   ChevronsUpDownIcon,
@@ -73,14 +73,16 @@ import { MdOutlineBuild } from "react-icons/md";
 export default function Info() {
   const searchParams = useSearchParams();
   const [editavel, setEditavel] = useState<boolean>(false);
-  const uuid = searchParams.get("uuid-veiculo")!;
+  const { register, handleSubmit, setValue, control, getValues, watch } =
+    useForm<cliente_info>();
+  const uuid = searchParams.get("uuid-cliente")!;
   const { headers } = useContext(ContextAuth);
   const { setStateLoading } = useContext(ContextLoading);
-  const { data: veiculo, isLoading } = useQuery<veiculo_info>({
-    queryKey: [`veiculo-${uuid}`],
+  const { data: cliente, isLoading } = useQuery<cliente_info>({
+    queryKey: [`cliente-${uuid}`],
     queryFn: async () => {
       return await axios
-        .get(`/api/veiculo/find/${uuid}`, {
+        .get(`/api/cliente/find/${uuid}`, {
           headers: headers,
         })
         .then((response) => {
@@ -89,241 +91,76 @@ export default function Info() {
     },
   });
 
+  useLayoutEffect(() => {
+    setValue("cliente", cliente?.cliente!);
+  }, [cliente]);
+
   useEffect(() => {
     setStateLoading(true);
     if (!isLoading) setStateLoading(false);
   }, [isLoading]);
 
-  function ElementDados({
-    titulo,
-    data,
-  }: {
-    titulo: string;
-    data: string | null | undefined;
-  }) {
-    return (
-      <div className="w-[45%] max-lg:!w-[100%] p-5 text-center rounded-sm border relative font-semibold flex justify-center items-center">
-        <span className="absolute text-sm text-stone-400 top-1 left-2">
-          {titulo.toUpperCase()}
-        </span>{" "}
-        <span className="text-xl">{data ? data.toUpperCase() : "N/A"}</span>
-      </div>
-    );
-  }
-
   return (
     <div className="flex flex-col gap-5">
-      {veiculo && (
+      {/* {cliente && (
         <EditarVeiculo
           veiculo_info={veiculo!}
           open={editavel}
           onOpenChange={setEditavel}
         />
-      )}
-      <div>
-        <div className="border-b py-2 flex justify-between items-center">
-          <span>Informações do veiculo</span>
-          <Button className=" h-[35px]" onClick={() => setEditavel(!editavel)}>
-            Editar
-            <FiEdit />
-          </Button>
-        </div>
-        <div
-          className={cn(
-            "h-[20px] text-white rounded-b-sm text-center font-bold text-xs flex items-center justify-center",
-            veiculo?.veiculo?.status === "LIVRE" ? "bg-green-600" : "bg-red-600"
-          )}
-        >
-          {veiculo?.veiculo?.status === "LIVRE" && <span>Livre</span>}
-          {veiculo?.veiculo?.status === "ALUGADO" && <span>Alugado</span>}
-        </div>
-      </div>
-      <div className="border rounded-sm flex flex-wrap p-5 gap-5 justify-center relative">
-        <span className="text-stone-600 font-bold w-full">Informações</span>
-        <ElementDados titulo="tipo" data={veiculo?.veiculo?.tipo} />
-        <ElementDados titulo="modelo" data={veiculo?.veiculo?.modelo} />
-        <ElementDados titulo="modelo" data={veiculo?.veiculo?.marca} />
-        <ElementDados titulo="placa" data={veiculo?.veiculo?.placa_veicular} />
-        <ElementDados
-          titulo="km"
-          data={`${veiculo?.veiculo?.km.toString()}Km`}
-        />
-        <ElementDados titulo="renavam" data={veiculo?.veiculo?.renavam} />
-        <ElementDados titulo="chassi" data={veiculo?.veiculo?.chassi} />
-      </div>
-      <div className="border rounded-sm flex flex-wrap p-5 gap-5 justify-center relative">
-        <span className="text-stone-600 font-bold w-full">Financeiro</span>
-        <div
-          className={cn(
-            "grow basis-[250px] p-10 text-center rounded-sm border relative font-semibold",
-            veiculo?.veiculo?.status === "ALUGADO"
-              ? "border-green-400 text-green-600"
-              : "border-stone-400 text-stone-600"
-          )}
-        >
-          <span className="absolute text-sm top-1 left-2 ">ALUGUEL</span>{" "}
-          <span className="text-xl flex justify-center items-center">
-            {Intl.NumberFormat("pt-br", {
-              currency: "BRL",
-              style: "currency",
-            }).format(veiculo?.veiculo?.valor_aluguel!)}
-            {veiculo?.veiculo?.status === "ALUGADO" ? (
-              <IoCaretUpOutline />
-            ) : (
-              <TiMinus />
-            )}
-          </span>
-        </div>
-        <div
-          className={cn(
-            "grow basis-[250px] p-10 text-center rounded-sm border relative font-semibold",
-            veiculo?.veiculo?.status === "ALUGADO"
-              ? "border-red-400 text-red-600"
-              : "border-stone-400 text-stone-600"
-          )}
-        >
-          <span className="absolute text-sm top-1 left-2 ">MANUTENÇÃO</span>{" "}
-          <span className="text-xl flex justify-center items-center">
-            {Intl.NumberFormat("pt-br", {
-              currency: "BRL",
-              style: "currency",
-            }).format(veiculo?.veiculo?.valor_manutencao!)}
-            {veiculo?.veiculo?.status === "ALUGADO" ? (
-              <IoCaretDownOutline />
-            ) : (
-              <TiMinus />
-            )}
-          </span>
-        </div>
-        <div
-          className={cn(
-            "grow basis-[250px] p-10 text-center rounded-sm border relative font-semibold",
-            veiculo?.veiculo?.status === "ALUGADO"
-              ? "border-red-400 text-red-600"
-              : "border-stone-400 text-stone-600"
-          )}
-        >
-          <span className="absolute text-sm top-1 left-2 ">SEGURO</span>{" "}
-          <span className="text-xl flex justify-center items-center border-red-400 text-red-600">
-            {Intl.NumberFormat("pt-br", {
-              currency: "BRL",
-              style: "currency",
-            }).format(veiculo?.veiculo?.valor_seguro!)}
-            <IoCaretDownOutline />
-          </span>
-        </div>
-      </div>
-      <div className="border rounded-sm flex flex-wrap p-5 gap-5 justify-center relative">
-        <span className="text-stone-600 font-bold w-full">
-          Peças vinculadas
-        </span>
-        {veiculo?.pecas?.map((peca, i) => {
-          return (
-            <div
-              key={i}
-              className="grow basis-[100%] text-center rounded-sm border relative font-semibold overflow-hidden"
-            >
-              <div
-                className="absolute bg-yellow-300 h-full rounded-sm transition-all duration-500 right-0"
-                style={{
-                  width: `${Math.min(
-                    (peca.peca.km_aviso / peca.peca.km_troca) * 100,
-                    100
-                  )}%`,
-                  opacity: 0.3,
-                }}
-              >
-                <span>% AVISO</span>
-              </div>
-              <div
-                className="absolute bg-stone-300 h-full rounded-sm transition-all duration-500"
-                style={{
-                  width: `${Math.min(
-                    (peca.veiculo_peca.km_registro / peca.peca.km_troca) * 100,
-                    100
-                  )}%`,
-                  opacity: 0.3,
-                }}
-              >
-                {" "}
-              </div>
-
-              <div className="relative p-5 flex items-center justify-end">
-                <span className="absolute text-xs top-2 left-2">
-                  {peca.peca.tipo.replaceAll("_", " ")}
-                </span>
-
-                <div className="relative rounded-lg p-2 bg-stone-200">
-                  {IconePeca[peca.peca.tipo] || (
-                    <MdOutlineBuild className="w-[35px] h-[35px]" />
-                  )}
-                </div>
-
-                <span className="absolute text-xs bottom-0.5 left-2 text-stone-400">
-                  {peca.veiculo_peca.km_registro}km | {peca.peca.km_troca}km
-                </span>
-
-                <span className="absolute text-xs bottom-0.5 right-2 text-stone-600">
-                  {Math.round(
-                    Math.min(
-                      (peca.veiculo_peca.km_registro / peca.peca.km_troca) *
-                        100,
-                      100
-                    )
-                  )}
-                  %
-                </span>
-              </div>
-            </div>
-          );
-        })}
-      </div>
-      {veiculo?.veiculo?.status === "ALUGADO" && (
-        <div className="border rounded-sm flex flex-wrap p-5 gap-5 justify-center relative">
-          <span className="text-stone-600 font-bold w-full">
-            Cliente Vinculado
-          </span>
-          <div className="grow basis-[100%] pt-10 pl-5 pr-5 pb-5 text-center rounded-sm border relative font-semibold flex items-center justify-end">
-            <span className="absolute text-sm top-2 left-2 ">
-              {veiculo?.cliente?.nome_completo}
-            </span>
-
-            <div className="flex gap-3 text-xs justify-between w-full items-center">
-              <div className="flex flex-col gap-2 items-start">
-                <span>
-                  CPF:{" "}
-                  {veiculo?.cliente?.num_cpf.replace(
-                    /(\d{3})(\d{3})(\d{3})(\d{1,2})/,
-                    "$1.$2.$3-$4"
-                  )}
-                </span>
-                <span>DATA DE CONTRATO: {veiculo?.cliente?.data_contrato}</span>
-                {veiculo?.cliente?.data_fim_contrato && (
-                  <span>
-                    DATA DE VENCIMENTO: {veiculo?.cliente?.data_fim_contrato}
-                  </span>
-                )}
-                <span>
-                  VALOR FINAL:{" "}
-                  {Intl.NumberFormat("pt-br", {
-                    currency: "BRL",
-                    style: "currency",
-                  }).format(veiculo.cliente?.total_pagar!)}
-                </span>
-              </div>
-              <div>
-                <div className="relative rounded-lg p-2 bg-stone-200">
-                  <PiUser
-                    className={
-                      "w-[20px] h-[20px] stroke-stone-500 fill-stone-500"
-                    }
-                  />
-                </div>
-              </div>
-            </div>
+      )} */}
+      <div className="">
+        <div className="border rounded-sm flex flex-col gap-5 p-5 w-full">
+          <span className="font-semibold text-sm">Dados pessoais</span>
+          <div className="flex flex-wrap gap-5 justify-center w-full">
+            <LabelInput
+              className="grow  basis-[300px] h-[50px]"
+              id="Nome completo"
+              required
+              {...register("cliente.nome_completo")}
+            />
+            <LabelInput
+              className="grow  basis-[300px] h-[50px]"
+              id="CPF"
+              disabled
+              readOnly
+              {...register("cliente.num_cpf", {
+                disabled: true,
+              })}
+            />
+            <LabelInput
+              required
+              className="grow  basis-[300px] h-[50px]"
+              id="Data de nascimento"
+              type="date"
+              defaultValue={moment(cliente?.cliente.data_nascimento)
+                .toDate()
+                .toISOString()}
+              {...register("cliente.data_nascimento")}
+            />
+            <LabelInput
+              className="grow  basis-[300px] h-[50px]"
+              id="CPF"
+              {...register("cliente.num_cpf")}
+            />
+            <LabelInput
+              className="grow  basis-[300px] h-[50px]"
+              id="CPF"
+              {...register("cliente.num_cpf")}
+            />
+            <LabelInput
+              className="grow  basis-[300px] h-[50px]"
+              id="CPF"
+              {...register("cliente.num_cpf")}
+            />
+            <LabelInput
+              className="grow  basis-[300px] h-[50px]"
+              id="CPF"
+              {...register("cliente.num_cpf")}
+            />
           </div>
         </div>
-      )}
+      </div>
     </div>
   );
 }

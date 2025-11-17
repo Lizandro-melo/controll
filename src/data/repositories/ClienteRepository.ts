@@ -1,9 +1,50 @@
-import { create_cliente, find_cliente } from "@/domain/entities";
+import { cliente_info, create_cliente, find_cliente } from "@/domain/entities";
 import IClienteRepository from "@/domain/repositories/IClienteRepository";
 import { Prisma_auth, Prisma_logic } from "@/infra/db";
 import moment from "moment-timezone";
+import { veiculo } from "@prisma/logic";
 
 export default class ClienteRepository implements IClienteRepository {
+  async consult_cliente_info_by_uuid_cliente({
+    ...props
+  }: {
+    uuid_cliente: string;
+    uuid_auth: string;
+  }): Promise<cliente_info> {
+    const cliente = await Prisma_logic.cliente
+      .findUnique({
+        where: {
+          uuid: props.uuid_cliente,
+          uuid_operador: props.uuid_auth,
+        },
+      })
+      .then((r) => r);
+    const veiculos: veiculo[] = await Prisma_logic.veiculo.findMany({
+      where: {
+        uuid_cliente: props.uuid_cliente,
+      },
+    });
+    const celulares = await Prisma_logic.celular_cliente
+      .findMany({
+        where: {
+          uuid_cliente: props.uuid_cliente,
+        },
+      })
+      .then((c) => c);
+    const enderecos = await Prisma_logic.endereco_cliente
+      .findMany({
+        where: {
+          uuid_cliente: props.uuid_cliente,
+        },
+      })
+      .then((e) => e);
+    return {
+      cliente: cliente!,
+      telefones: celulares,
+      enderecos: enderecos,
+      veiculos_vinculados: veiculos ?? [],
+    };
+  }
   async consult_cpf_cliente_by_uuid_cliente({
     num_cpf,
     uuid_auth,
@@ -12,7 +53,7 @@ export default class ClienteRepository implements IClienteRepository {
     uuid_auth: string;
   }): Promise<void> {
     await Prisma_logic.cliente
-      .findFirstOrThrow({
+      .findFirst({
         where: {
           num_cpf: num_cpf,
           uuid_operador: uuid_auth,
@@ -24,10 +65,41 @@ export default class ClienteRepository implements IClienteRepository {
       });
   }
 
-  //   async consult_clientes_by_uuid_operador({ uuid_cliente, }: { uuid_cliente: string; }): Promise<find_cliente> {
-  //       await
-  //   }
-  
+  async consult_clientes_by_uuid_operador({
+    uuid_auth,
+  }: {
+    uuid_auth: string;
+  }): Promise<find_cliente> {
+    const clientes = await Prisma_logic.cliente
+      .findMany({
+        where: {
+          uuid_operador: uuid_auth,
+          status: true,
+        },
+      })
+      .then((response) => response);
+
+    const find_cliente: find_cliente = [];
+
+    for (const c of clientes) {
+      const celular = await Prisma_logic.celular_cliente.findFirst({
+        where: {
+          uuid_cliente: c.uuid,
+        },
+      });
+      find_cliente.push({
+        uuid: c.uuid,
+        num_cpf: c.num_cpf,
+        correio_eletronico: c.correio_eletronico,
+        data_contrato: c.data_contrato.toLocaleDateString(),
+        data_fim_contrato: c.data_fim_contrato?.toLocaleDateString() ?? "-",
+        nome_completo: c.nome_completo,
+        num_cel: celular?.num_cel!,
+      });
+    }
+    return find_cliente;
+  }
+
   async register_cliente({
     uuid_auth,
     create_cliente,

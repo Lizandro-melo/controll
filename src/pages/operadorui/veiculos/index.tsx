@@ -323,12 +323,7 @@ function ShowVeiculo({ veiculo }: { veiculo: veiculo }) {
       <TableCell>{veiculo.marca}</TableCell>
       <TableCell>{veiculo.placa_veicular}</TableCell>
       <TableCell>{veiculo.km}</TableCell>
-      <TableCell
-        className={cn(
-          "font-extrabold text-white",
-          veiculo.status === "ALUGADO" ? "bg-zinc-400" : "bg-red-400"
-        )}
-      >
+      <TableCell className={cn("font-extrabold text-white", "bg-red-400")}>
         {Intl.NumberFormat("pt-br", {
           currency: "BRL",
           style: "currency",

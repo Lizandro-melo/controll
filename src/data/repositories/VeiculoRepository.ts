@@ -3,6 +3,7 @@ import IVeiculoRepository from "@/domain/repositories/IVeiculoRepository";
 import { Prisma_logic } from "@/infra/db";
 import { peca, veiculo, veiculo_peca } from "@prisma/logic";
 import { log } from "console";
+import moment from "moment-timezone";
 
 export default class VeiculoRepository implements IVeiculoRepository {
   async update_veiculo_by_uuid_veiculo({
@@ -36,7 +37,8 @@ export default class VeiculoRepository implements IVeiculoRepository {
       const pecas = await prisma.peca.findMany({
         where: {
           id: {
-            in: veiculo_pecas?.filter((p) => p.veiculo_peca.status)
+            in: veiculo_pecas
+              ?.filter((p) => p.veiculo_peca.status)
               .map((p) => p.peca.id),
           },
         },
@@ -45,6 +47,13 @@ export default class VeiculoRepository implements IVeiculoRepository {
       for (const r of pecas) {
         valor_manutencao += r.preco_medio;
       }
+
+      const cliente = await Prisma_logic.cliente.findFirst({
+        where: {
+          num_cpf: veiculo_info.cliente?.num_cpf,
+          uuid_operador: uuid_auth,
+        },
+      });
 
       await prisma.veiculo.update({
         where: {
@@ -62,8 +71,8 @@ export default class VeiculoRepository implements IVeiculoRepository {
           placa_veicular: veiculo_info.veiculo.placa_veicular,
           renavam: veiculo_info.veiculo.renavam,
           chassi: veiculo_info.veiculo.chassi,
-          uuid_cliente: veiculo_info.cliente?.uuid ?? null,
-          status: veiculo_info.cliente ? "ALUGADO" : "LIVRE",
+          uuid_cliente: cliente?.uuid ?? null,
+          status: cliente?.uuid ? "ALUGADO" : "LIVRE",
         },
       });
     });
@@ -134,8 +143,28 @@ export default class VeiculoRepository implements IVeiculoRepository {
         peca: p.peca,
       };
     });
+
+    const props_cliente: {
+      nome_completo: string;
+      num_cpf: string;
+      data_contrato: string;
+      data_fim_contrato: string;
+      total_pagar: number;
+    } = {
+      nome_completo: cliente?.nome_completo!,
+      num_cpf: cliente?.num_cpf!,
+      data_contrato: cliente?.data_contrato.toLocaleDateString()!,
+      data_fim_contrato: cliente?.data_fim_contrato?.toLocaleDateString()!,
+      total_pagar:
+        veiculo?.valor_aluguel! *
+        moment(veiculo?.cliente?.data_fim_contrato).diff(
+          veiculo?.cliente?.data_contrato,
+          "M"
+        ),
+    };
+
     return {
-      cliente: cliente,
+      cliente: props_cliente,
       pecas: result,
       veiculo: veiculo,
     };
