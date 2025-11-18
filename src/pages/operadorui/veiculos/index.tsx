@@ -302,7 +302,7 @@ function NovoVeiculo({ ...props }: React.ComponentProps<FC<DialogProps>>) {
   );
 }
 
-function ShowVeiculo({ veiculo }: { veiculo: veiculo }) {
+export function ShowVeiculo({ veiculo }: { veiculo: veiculo }) {
   const searchParams = useSearchParams();
 
   const selectVeiculo = (uuid: string) => {

@@ -34,12 +34,15 @@ import axios from "axios";
 import { ContextAuth } from "@/presentation/provider/provider_auth";
 import { useSearchParams } from "next/navigation";
 import Router from "next/router";
+import { X } from "lucide-react";
 
 export default function Clientes() {
   const [stateNewCliente, setStateNewCliente] = useState<boolean>();
   const { headers } = useContext(ContextAuth);
   const { drop_alert } = useContext(ContextAlert);
+  const queryClient = useQueryClient();
   const { startLoading } = useContext(ContextLoading);
+  const [filter, setFilter] = useState<string>("");
   const { data: list_clientes } = useQuery<find_cliente>({
     queryKey: ["list_clientes"],
     queryFn: async () => {
@@ -71,12 +74,33 @@ export default function Clientes() {
         </div>
 
         <div className="flex">
-          <Button className="cursor-pointer">
-            <HiOutlineFilter />
-          </Button>
           <div className="relative w-full flex items-center">
-            <Input placeholder="Nome do cliente" className="pr-14" />
-            <GoSearch className="absolute w-[20px] h-[20px] right-5" />
+            <Input
+              placeholder="Nome do cliente"
+              className="pr-14"
+              value={filter}
+              onInput={(e) => {
+                setFilter(e.currentTarget.value);
+                const value = e.currentTarget.value.toUpperCase();
+                if (value === "") {
+                  queryClient.fetchQuery({ queryKey: ["list_clientes"] });
+                }
+                const clientes = queryClient.getQueryData<find_cliente>([
+                  "list_clientes",
+                ]);
+                const find_cliente = clientes?.filter((c) =>
+                  c.nome_completo?.toUpperCase().includes(value)
+                );
+                queryClient.setQueryData(["list_clientes"], find_cliente);
+              }}
+            />
+            <X
+              className="absolute w-[20px] h-[20px] right-5 cursor-pointer"
+              onClick={() => {
+                setFilter("");
+                queryClient.fetchQuery({ queryKey: ["list_clientes"] });
+              }}
+            />
           </div>
         </div>
 
@@ -186,10 +210,14 @@ function NovoCliente({ ...props }: React.ComponentProps<FC<any>>) {
                 <div className="border rounded-sm flex flex-col gap-5 p-5">
                   <LabelInput
                     required
-                    {...register("numero_residencial")}
+                    {...register("codigo_postal")}
                     id="CEP"
                   />
-                  <LabelInput required {...register("codigo_postal")} id="N°" />
+                  <LabelInput
+                    required
+                    {...register("numero_residencial")}
+                    id="N°"
+                  />
                 </div>
               </div>
               <div>

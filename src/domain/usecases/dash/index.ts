@@ -36,22 +36,24 @@ export async function dashboard({
 
       if (pecas_alerta.length > 0) {
         return {
-          veiculo_link: `/operadorui/veiculos/info?${v.uuid}`,
-          tipo_peca: pecas_alerta,
+          veiculo_link: `/operadorui/veiculos/info?uuid-veiculo=${v.uuid}`,
+          veiculo: {
+            modelo: v.modelo!,
+            placa: v.placa_veicular!,
+            tipo_peca: pecas_alerta!,
+          },
         };
       }
 
       return null;
-    }),
+    })
   );
-  const veiculos_alerta_filtrado = veiculos_alerta.filter(
-    (v): v is { veiculo_link: string; tipo_peca: tipo_peca[] } => v !== null,
-  );
+  const veiculos_alerta_filtrado = veiculos_alerta.filter((v) => v !== null);
   const pecas = operador?.pecas!.filter((p) => p.status);
   const clientes = operador?.clientes.filter((c) => c.status);
   const receita_potencial = veiculos_alugados.reduce(
     (acc, v) => acc + (v.valor_aluguel || 0),
-    0,
+    0
   );
   const ticket_medio =
     veiculos_alugados.length > 0

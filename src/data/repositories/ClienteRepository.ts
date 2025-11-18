@@ -3,8 +3,55 @@ import IClienteRepository from "@/domain/repositories/IClienteRepository";
 import { Prisma_auth, Prisma_logic } from "@/infra/db";
 import moment from "moment-timezone";
 import { veiculo } from "@prisma/logic";
+import { log } from "console";
 
 export default class ClienteRepository implements IClienteRepository {
+  async update_cliente_info({
+    info,
+    uuid_auth,
+  }: {
+    info: cliente_info;
+    uuid_auth: string;
+  }): Promise<void> {
+    await Prisma_logic.$transaction(async (prisma) => {
+      log(info.telefones);
+      await prisma.celular_cliente.deleteMany({
+        where: { uuid_cliente: info.cliente.uuid },
+      });
+
+      for (const c of info.telefones) {
+        await prisma.celular_cliente.create({
+          data: {
+            num_cel: c.num_cel,
+            uuid_cliente: info.cliente.uuid,
+            status: true,
+          },
+        });
+      }
+
+      await prisma.endereco_cliente.update({
+        where: {
+          id: info.enderecos[0].id,
+        },
+        data: info.enderecos[0],
+      });
+      await prisma.cliente.update({
+        where: {
+          uuid: info.cliente.uuid,
+          uuid_operador: uuid_auth,
+        },
+        omit: {
+          num_cpf: true,
+        },
+        data: {
+          ...info.cliente,
+          data_nascimento: moment(info.cliente.data_nascimento).toDate(),
+          data_contrato: moment(info.cliente.data_contrato).toDate(),
+          data_fim_contrato: moment(info.cliente.data_fim_contrato).toDate(),
+        },
+      });
+    });
+  }
   async consult_cliente_info_by_uuid_cliente({
     ...props
   }: {
@@ -39,7 +86,21 @@ export default class ClienteRepository implements IClienteRepository {
       })
       .then((e) => e);
     return {
-      cliente: cliente!,
+      cliente: {
+        ...cliente!,
+        data_contrato: moment(cliente?.data_nascimento)
+          .toDate()
+          .toISOString()
+          .split("T")[0],
+        data_fim_contrato: moment(cliente?.data_nascimento)
+          .toDate()
+          .toISOString()
+          .split("T")[0],
+        data_nascimento: moment(cliente?.data_nascimento)
+          .toDate()
+          .toISOString()
+          .split("T")[0],
+      },
       telefones: celulares,
       enderecos: enderecos,
       veiculos_vinculados: veiculos ?? [],

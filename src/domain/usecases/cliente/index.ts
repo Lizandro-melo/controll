@@ -60,3 +60,23 @@ export async function findUniqueCliente({
     uuid_auth,
   });
 }
+
+export async function updateCliente({
+  session,
+  cliente_info,
+}: {
+  session: string;
+  cliente_info: cliente_info;
+}) {
+  const { uuid_auth } = await auth_repository.consult_uuid_auth_by_session({
+    session,
+  });
+  try {
+    cliente_repository.update_cliente_info({
+      info: cliente_info,
+      uuid_auth: uuid_auth,
+    });
+  } catch {
+    throw new Error("Não foi possivel atualizar os dados do cliente");
+  }
+}

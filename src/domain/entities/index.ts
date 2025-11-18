@@ -20,7 +20,10 @@ export type dash_data = {
   total_pecas: number;
   total_clientes_ativos: number;
   receita_potencial: number;
-  veiculos_alerta: { veiculo_link: string; tipo_peca: tipo_peca[] }[];
+  veiculos_alerta: {
+    veiculo_link: string;
+    veiculo: { modelo: string; placa: string; tipo_peca: tipo_peca[] };
+  }[];
   ticket_medio: number;
 };
 
@@ -75,7 +78,19 @@ export type find_cliente = {
 }[];
 
 export type cliente_info = {
-  cliente: cliente;
+  cliente: {
+    uuid: string;
+    nome_completo: string;
+    num_cpf: string;
+    num_cnpj: string | null;
+    data_nascimento: string | null;
+    correio_eletronico: string;
+    observacao: string | null;
+    uuid_operador: string;
+    data_contrato: string;
+    data_fim_contrato: string | null;
+    status: boolean;
+  };
   telefones: celular_cliente[];
   enderecos: endereco_cliente[];
   veiculos_vinculados: veiculo[];

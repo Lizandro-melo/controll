@@ -78,11 +78,11 @@ export default function Nav({ children }: { children: ReactNode }) {
           title="Clientes"
           path="/operadorui/cliente"
         />
-        <ItemList
+        {/* <ItemList
           icon={<FiAlertTriangle className="w-[20px] h-[20px]" />}
           title="Alertas"
           path="/operadorui/alert"
-        />
+        /> */}
         <ItemList
           icon={<LuDoorOpen className="w-[20px] h-[20px]" />}
           title="Sair"

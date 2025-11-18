@@ -1,6 +1,22 @@
-import { cliente, peca, veiculo, veiculo_peca } from "@prisma/logic";
+import {
+  cliente,
+  endereco_cliente,
+  peca,
+  veiculo,
+  veiculo_peca,
+} from "@prisma/logic";
 import { useSearchParams } from "next/navigation";
 import Router from "next/router";
+import {
+  Table,
+  TableBody,
+  TableCaption,
+  TableCell,
+  TableFooter,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/presentation/components/ui/table";
 import {
   Command,
   CommandEmpty,
@@ -40,6 +56,7 @@ import {
   CircleCheckBig,
   Plus,
   Save,
+  Trash,
   Trash2,
   User,
   Wrench,
@@ -69,15 +86,32 @@ import { DialogProps } from "@radix-ui/react-dialog";
 import { refresh } from "next/cache";
 import { IconePeca } from "../../peca";
 import { MdOutlineBuild } from "react-icons/md";
+import { Textarea } from "@/presentation/components/ui/textarea";
+import { celular_cliente } from "@prisma/logic";
+import { BsWhatsapp } from "react-icons/bs";
+import { ShowVeiculo } from "../../veiculos";
 
 export default function Info() {
   const searchParams = useSearchParams();
-  const [editavel, setEditavel] = useState<boolean>(false);
   const { register, handleSubmit, setValue, control, getValues, watch } =
     useForm<cliente_info>();
+  const queryClient = useQueryClient();
+  const [contatos, setContatos] = useState<celular_cliente[]>([]);
+  const [enderecos, setEnderecos] = useState<endereco_cliente[]>([]);
+  const [enderecosAll, setEnderecosAll] = useState<
+    {
+      state: string;
+      city: string;
+      neighborhood: string;
+      street: string;
+      service: string;
+    }[]
+  >([]);
+  const [veiculos, setVeiculos] = useState<veiculo[]>([]);
   const uuid = searchParams.get("uuid-cliente")!;
   const { headers } = useContext(ContextAuth);
-  const { setStateLoading } = useContext(ContextLoading);
+  const { setStateLoading, startLoading } = useContext(ContextLoading);
+  const { drop_alert } = useContext(ContextAlert);
   const { data: cliente, isLoading } = useQuery<cliente_info>({
     queryKey: [`cliente-${uuid}`],
     queryFn: async () => {
@@ -91,151 +125,23 @@ export default function Info() {
     },
   });
 
-  useLayoutEffect(() => {
-    setValue("cliente", cliente?.cliente!);
-  }, [cliente]);
-
-  useEffect(() => {
-    setStateLoading(true);
-    if (!isLoading) setStateLoading(false);
-  }, [isLoading]);
-
-  return (
-    <div className="flex flex-col gap-5">
-      {/* {cliente && (
-        <EditarVeiculo
-          veiculo_info={veiculo!}
-          open={editavel}
-          onOpenChange={setEditavel}
-        />
-      )} */}
-      <div className="">
-        <div className="border rounded-sm flex flex-col gap-5 p-5 w-full">
-          <span className="font-semibold text-sm">Dados pessoais</span>
-          <div className="flex flex-wrap gap-5 justify-center w-full">
-            <LabelInput
-              className="grow  basis-[300px] h-[50px]"
-              id="Nome completo"
-              required
-              {...register("cliente.nome_completo")}
-            />
-            <LabelInput
-              className="grow  basis-[300px] h-[50px]"
-              id="CPF"
-              disabled
-              readOnly
-              {...register("cliente.num_cpf", {
-                disabled: true,
-              })}
-            />
-            <LabelInput
-              required
-              className="grow  basis-[300px] h-[50px]"
-              id="Data de nascimento"
-              type="date"
-              defaultValue={moment(cliente?.cliente.data_nascimento)
-                .toDate()
-                .toISOString()}
-              {...register("cliente.data_nascimento")}
-            />
-            <LabelInput
-              className="grow  basis-[300px] h-[50px]"
-              id="CPF"
-              {...register("cliente.num_cpf")}
-            />
-            <LabelInput
-              className="grow  basis-[300px] h-[50px]"
-              id="CPF"
-              {...register("cliente.num_cpf")}
-            />
-            <LabelInput
-              className="grow  basis-[300px] h-[50px]"
-              id="CPF"
-              {...register("cliente.num_cpf")}
-            />
-            <LabelInput
-              className="grow  basis-[300px] h-[50px]"
-              id="CPF"
-              {...register("cliente.num_cpf")}
-            />
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-type Props = React.ComponentProps<FC<DialogProps>> & {
-  veiculo_info: veiculo_info;
-};
-
-function EditarVeiculo({ veiculo_info, ...props }: Props) {
-  const { register, handleSubmit, setValue, control, getValues, watch } =
-    useForm<veiculo_info>();
-  const [open, setOpen] = useState(false);
-  const { headers } = useContext(ContextAuth);
-  const { drop_alert } = useContext(ContextAlert);
-  const { startLoading } = useContext(ContextLoading);
-  const queryClient = useQueryClient();
-  const [cpf_cliente, setcpf_cliente] = useState<string>();
-  const [pecas, setpecas] = useState<
-    {
-      veiculo_peca: veiculo_peca;
-      peca: peca;
-    }[]
-  >([]);
-
-  // preencher valores iniciais
-  useLayoutEffect(() => {
-    setValue("veiculo", veiculo_info.veiculo);
-    setValue("cliente", veiculo_info.cliente);
-    setpecas(veiculo_info.pecas ?? []);
-    queryClient.fetchQuery({
-      queryKey: ["list_pecas"],
-      queryFn: async () => {
-        return await axios
-          .get("/api/peca/find", {
-            headers: headers,
-          })
-          .then((response) => {
-            return response.data.result;
-          });
-      },
-    });
-    queryClient.fetchQuery({
-      queryKey: ["list_clientes"],
-      queryFn: async () => {
-        return await axios
-          .get("/api/cliente/find", {
-            headers: headers,
-          })
-          .then((response) => {
-            return response.data.result;
-          });
-      },
-    });
-  }, [veiculo_info]);
-
-  const { mutateAsync: update_veiculo } = useMutation({
-    mutationFn: async (data: veiculo_info) => {
+  const { mutateAsync: update_cliente } = useMutation({
+    mutationFn: async (data: cliente_info) => {
       startLoading(
         axios
           .put(
-            `/api/veiculo/update/${data.veiculo.uuid}`,
+            `/api/cliente/update`,
             {
               ...data,
-              pecas: pecas,
-              cliente: {
-                num_cpf: cpf_cliente,
-              },
+              telefones: contatos,
+              enderecos: enderecos,
             },
             { headers }
           )
           .then(async (response) => {
             drop_alert(response.data.type, response.data.m);
-            props.onOpenChange!(false);
             queryClient.invalidateQueries({
-              queryKey: [`veiculo-${data.veiculo.uuid}`],
+              queryKey: [`cliente-${uuid}`],
             });
           })
           .catch((e) =>
@@ -248,303 +154,275 @@ function EditarVeiculo({ veiculo_info, ...props }: Props) {
     },
   });
 
-  const add_peca = useCallback(() => {
-    const nova: {
-      veiculo_peca: veiculo_peca;
-      peca: peca;
-    } = {
-      veiculo_peca: {
-        veiculo_uuid: veiculo_info.veiculo.uuid,
-        peca_id: 0,
-        km_registro: 0,
-        data_ultima_troca: new Date(),
-        status: true,
-      },
-      peca: {
-        id: null,
-      },
-    } as any;
+  useLayoutEffect(() => {
+    setValue("cliente", cliente?.cliente!);
+    setContatos(cliente?.telefones ?? []);
+    setEnderecos(cliente?.enderecos ?? []);
+    setVeiculos(cliente?.veiculos_vinculados ?? []);
+    for (const e of cliente?.enderecos ?? []) {
+      axios
+        .get(`https://brasilapi.com.br/api/cep/v1/${e.codigo_postal}`)
+        .then((response) => {
+          setEnderecosAll((prev) => [...prev, { ...response.data }]);
+        })
+        .catch(() => {
+          return;
+        });
+    }
+  }, [cliente]);
 
-    const nova_lista = [...pecas, nova];
-    setpecas(nova_lista);
-  }, [pecas, veiculo_info]);
+  const verificarCepUnique = (value: string, i: number) => {
+    axios
+      .get(`https://brasilapi.com.br/api/cep/v1/${value}`)
+      .then((response) => {
+        setEnderecosAll((prev) =>
+          prev.map((endereco, index) => index === i && { ...response.data })
+        );
+      })
+      .catch(() => {
+        return;
+      });
+  };
+
+  useEffect(() => {
+    setStateLoading(true);
+    if (!isLoading) setStateLoading(false);
+  }, [isLoading]);
+
+  const dados = (data: any) => {
+    console.log(data);
+  };
 
   return (
-    <Dialog {...props}>
-      <DialogContent className="flex flex-col gap-10 max-h-[90vh] overflow-y-auto">
-        <DialogTitle>Editar Veículo</DialogTitle>
-
-        <form
-          onSubmit={handleSubmit((data) => update_veiculo(data))}
-          className="flex flex-col gap-5 w-full"
-        >
-          {/* INFORMAÇÕES BÁSICAS */}
-          <div className="border rounded-sm flex flex-col gap-5 p-5">
-            <LabelInput {...register("veiculo.modelo")} id="Modelo" required />
+    <form
+      onSubmit={handleSubmit((data) => update_cliente(data))}
+      className="flex flex-col gap-5"
+    >
+      <div className="flex flex-col gap-5">
+        <div className="border rounded-sm flex flex-col gap-5 p-5 w-full">
+          <span className="font-semibold text-sm">Dados pessoais</span>
+          <div className="flex flex-wrap gap-5 justify-center w-full">
             <LabelInput
-              {...register("veiculo.placa_veicular")}
-              id="Placa"
+              className="grow basis-[400px] h-[50px]"
+              id="Nome completo"
               required
+              {...register("cliente.nome_completo")}
             />
-            <LabelInput {...register("veiculo.renavam")} id="Renavam" />
-            <LabelInput {...register("veiculo.chassi")} id="Chassi" />
-
-            {/* Tipo */}
-            <div className="flex flex-col gap-3 max-w-[500px]">
-              <Label>Tipo</Label>
-              <Controller
-                control={control}
-                name="veiculo.tipo"
-                render={({ field }) => (
-                  <Select onValueChange={field.onChange} value={field.value}>
-                    <SelectTrigger className="w-full">
-                      <SelectValue placeholder="Tipo" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="MOTO">Moto</SelectItem>
-                      <SelectItem value="CARRO">Carro</SelectItem>
-                    </SelectContent>
-                  </Select>
-                )}
-              />
-            </div>
-
-            {/* Marca */}
-            <div className="flex flex-col gap-3 max-w-[500px]">
-              <Label>Marca</Label>
-              <Controller
-                control={control}
-                name="veiculo.marca"
-                render={({ field }) => (
-                  <Select onValueChange={field.onChange} value={field.value}>
-                    <SelectTrigger className="w-full">
-                      <SelectValue placeholder="Marca" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectGroup>
-                        <SelectLabel className="text-white font-bold bg-primary">
-                          Motos
-                        </SelectLabel>
-                        {MARCA_MOTOS.sort().map((m, i) => (
-                          <SelectItem key={i} value={`${m}-M`}>
-                            {m}
-                          </SelectItem>
-                        ))}
-                      </SelectGroup>
-                      <SelectGroup>
-                        <SelectLabel className="text-white font-bold bg-primary">
-                          Carros
-                        </SelectLabel>
-                        {MARCA_CARROS.sort().map((m, i) => (
-                          <SelectItem key={i} value={`${m}-C`}>
-                            {m}
-                          </SelectItem>
-                        ))}
-                      </SelectGroup>
-                    </SelectContent>
-                  </Select>
-                )}
-              />
-            </div>
-
             <LabelInput
-              {...register("veiculo.km")}
-              id="Km"
+              className="grow basis-[400px] h-[50px]"
+              id="CPF"
+              disabled
+              readOnly
+              {...register("cliente.num_cpf", {
+                disabled: true,
+              })}
+            />
+            <LabelInput
               required
-              type="number"
-            />
-          </div>
-
-          {/* FINANCEIRO */}
-          <div className="border rounded-sm flex flex-col gap-5 p-5">
-            <LabelInput
-              {...register("veiculo.valor_aluguel")}
-              id="Valor do Aluguel"
-              type="number"
+              className="grow basis-[400px] h-[50px]"
+              id="Data de nascimento"
+              type="date"
+              {...register("cliente.data_nascimento")}
             />
             <LabelInput
-              {...register("veiculo.valor_seguro")}
-              id="Valor do Seguro / Mês"
-              type="number"
+              required
+              className="grow basis-[400px] h-[50px]"
+              id="E-mail"
+              type=""
+              {...register("cliente.correio_eletronico")}
             />
           </div>
-
-          {/* CLIENTE VINCULADO */}
-          <div className="border rounded-sm flex flex-col gap-5 p-5">
-            <div className="flex justify-between items-center">
-              <span className="font-semibold flex items-center gap-2">
-                <User className="w-4 h-4" /> Cliente Vinculado
-              </span>
-            </div>
-
-            <Popover open={open} onOpenChange={setOpen}>
-              <PopoverTrigger asChild>
-                <Button
-                  variant="outline"
-                  role="combobox"
-                  aria-expanded={open}
-                  className=" justify-between"
-                >
-                  {queryClient.getQueryData<find_cliente>(["list_clientes"])
-                    ? queryClient
-                        .getQueryData<find_cliente>(["list_clientes"])
-                        ?.find((c) => c.num_cpf === cpf_cliente)?.nome_completo
-                    : "Selecione um cliente..."}
-                  <ChevronsUpDownIcon className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-[400px] p-0">
-                <Command>
-                  <CommandInput placeholder="CPF do cliente" />
-                  <CommandList>
-                    <CommandGroup>
-                      {queryClient
-                        .getQueryData<find_cliente>(["list_clientes"])
-                        ?.map((c, i) => (
-                          <CommandItem
-                            key={i}
-                            value={c.num_cpf}
-                            onSelect={(currentValue) => {
-                              setcpf_cliente(currentValue);
-                              setOpen(false);
-                            }}
-                          >
-                            <User className={cn("mr-2 h-4 w-4")} />
-                            {`${c.nome_completo} - ${c.num_cpf.replace(
-                              /(\d{3})(\d{3})(\d{3})(\d{1,2})/,
-                              "$1.$2.$3-$4"
-                            )}`}
-                          </CommandItem>
-                        ))}
-                    </CommandGroup>
-                  </CommandList>
-                </Command>
-              </PopoverContent>
-            </Popover>
+        </div>
+        <div className="border rounded-sm flex flex-col gap-5 p-5 w-full">
+          <span className="font-semibold text-sm">Contrato</span>
+          <div className="flex flex-wrap gap-5 justify-center w-full">
+            <LabelInput
+              className="grow basis-[400px] h-[50px]"
+              id="Inicio de contrato"
+              required
+              type="date"
+              {...register("cliente.data_contrato")}
+            />
+            <LabelInput
+              className="grow basis-[400px] h-[50px]"
+              id="Final de contrato"
+              type="date"
+              {...register("cliente.data_fim_contrato")}
+            />
           </div>
-
-          {/* PEÇAS */}
-          <div className="border rounded-sm flex flex-col gap-5 p-5">
-            <div className="flex justify-between items-center">
-              <span className="font-semibold flex items-center gap-2">
-                <Wrench className="w-4 h-4" /> Peças vinculadas
-              </span>
-              <Button
-                type="button"
-                variant="secondary"
-                onClick={add_peca}
-                className="flex gap-2"
-              >
-                <Plus size={14} /> Adicionar peça
-              </Button>
+        </div>
+        <div className="border rounded-sm flex flex-col gap-5 p-5 w-full">
+          <div className="flex flex-wrap gap-5 justify-center w-full">
+            <div className={`flex flex-col gap-3 w-full grow basis-[400px] `}>
+              <Label className={cn()}>Observação do Cliente</Label>
+              <Textarea {...register("cliente.observacao")} />
             </div>
-
-            {pecas.length === 0 && (
-              <span className="text-stone-500 text-sm">
-                Nenhuma peça vinculada
-              </span>
-            )}
-
-            {pecas.map((p, i) => (
-              <div
-                key={p.veiculo_peca.id}
-                className={cn(
-                  "border rounded-md px-3 pt-10 pb-5 flex flex-col gap-10 relative",
-                  !p.veiculo_peca.status && "opacity-30"
-                )}
-              >
-                <div className="absolute top-2 right-2">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    type="button"
-                    onClick={() => {
-                      setpecas((prev) =>
-                        prev.map((x) =>
-                          x.veiculo_peca.id === p.veiculo_peca.id
-                            ? {
-                                ...x,
-                                veiculo_peca: {
-                                  ...x.veiculo_peca,
-                                  status: !x.veiculo_peca.status,
-                                },
-                              }
-                            : x
+          </div>
+        </div>
+        <div className="border rounded-sm flex flex-col gap-5 p-5 w-full">
+          <span className="font-semibold text-sm">Contatos</span>
+          <div className="flex flex-wrap gap-5 justify-center w-full">
+            {contatos.map((c, i) => {
+              return (
+                <div className="flex w-full items-end gap-5">
+                  <LabelInput
+                    key={i}
+                    value={c.num_cel}
+                    onChange={(ev) => {
+                      const value = ev.currentTarget.value ?? "";
+                      setContatos((prev) =>
+                        prev.map((contato, index) =>
+                          index === i ? { ...contato, num_cel: value } : contato
                         )
                       );
                     }}
+                    id={`Contato ${i}`}
+                    required
+                  />
+                  <Button
+                    type="button"
+                    className="cursor-pointer bg-[#25D366]"
+                    onClick={() => {
+                      Router.push(
+                        `https://api.whatsapp.com/send?phone=${c.num_cel}`
+                      );
+                    }}
                   >
-                    {p.veiculo_peca.status ? (
-                      <Trash2 className="w-4 h-4 text-red-500" />
-                    ) : (
-                      <CircleCheckBig className="w-4 h-4 text-green-500" />
-                    )}
+                    <BsWhatsapp />
+                  </Button>
+                  <Button
+                    type="button"
+                    className="cursor-pointer bg-red-700"
+                    onClick={() => {
+                      setContatos((prev) =>
+                        prev.filter((co, index) => i !== index)
+                      );
+                    }}
+                  >
+                    <Trash />
                   </Button>
                 </div>
-                <div className="flex flex-col gap-3  max-w-[500px]">
-                  <Label
-                    className={cn(
-                      "after:ml-0.5 after:text-red-500 after:content-['*']"
-                    )}
-                  >
-                    Peça
-                  </Label>
-
-                  <Select
-                    defaultValue={p.peca.id ? p.peca.id.toString() : ""}
-                    onValueChange={(e) => {
-                      p.peca.id = parseInt(e);
-                    }}
-                    required
-                  >
-                    <SelectTrigger className="w-full">
-                      <SelectValue placeholder="Selecionar a peça" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {queryClient
-                        .getQueryData<peca[]>(["list_pecas"])
-                        ?.map((p) => (
-                          <SelectItem key={p.id} value={p.id.toString()}>
-                            {p.tipo.replaceAll("_", " ")} - {p.marca}
-                          </SelectItem>
-                        ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <LabelInput
-                  id={`KM Registro`}
-                  type="number"
-                  defaultValue={p.veiculo_peca.km_registro}
-                  onChange={(e) =>
-                    (p.veiculo_peca.km_registro = parseInt(
-                      e.currentTarget.value
-                    ))
-                  }
-                />
-                <LabelInput
-                  id={`Data Última Troca`}
-                  type="date"
-                  defaultValue={
-                    p.veiculo_peca.data_ultima_troca
-                      ? new Date(p.veiculo_peca.data_ultima_troca)
-                          .toISOString()
-                          .split("T")[0]
-                      : ""
-                  }
-                  onChange={(e) =>
-                    (p.veiculo_peca.data_ultima_troca = moment(
-                      e.currentTarget.value
-                    ).toDate())
-                  }
-                />
-              </div>
-            ))}
+              );
+            })}
           </div>
+          <Button
+            type="button"
+            className="cursor-pointer"
+            onClick={() => {
+              setContatos((prev) => {
+                const newContato: celular_cliente = {
+                  id: 0,
+                  num_cel: "",
+                  status: true,
+                  uuid_cliente: uuid,
+                };
+                return [...prev, newContato];
+              });
+            }}
+          >
+            <Plus />
+          </Button>
+        </div>
+        <div className="border rounded-sm flex flex-col gap-5 p-5 w-full">
+          <span className="font-semibold text-sm">Endereços</span>
+          <div className="flex flex-wrap gap-5 justify-center w-full">
+            {enderecos.map((e, i) => {
+              return (
+                <div className="flex flex-wrap gap-5 w-full border p-5">
+                  <div className="flex flex-wrap gap-5 w-full">
+                    <LabelInput
+                      className="grow basis-[400px] h-[50px]"
+                      key={i}
+                      value={e.codigo_postal}
+                      onChange={(ev) => {
+                        const value = ev.currentTarget.value ?? "";
 
-          <Button type="submit">Salvar Alterações</Button>
-        </form>
-      </DialogContent>
-    </Dialog>
+                        verificarCepUnique(value, i);
+
+                        setEnderecos((prev) =>
+                          prev.map((endereco, index) =>
+                            index === i
+                              ? { ...endereco, codigo_postal: value }
+                              : endereco
+                          )
+                        );
+                      }}
+                      id={`CEP`}
+                      required
+                    />
+                    <LabelInput
+                      className="grow basis-[400px] h-[50px]"
+                      key={i}
+                      value={enderecosAll[i]?.street ?? ""}
+                      id={`Endereço`}
+                      disabled
+                      readOnly
+                    />
+                    <LabelInput
+                      className="grow basis-[400px] h-[50px]"
+                      key={i}
+                      value={e.numero_residencial}
+                      id={`Nº`}
+                      required
+                    />
+                    <LabelInput
+                      className="grow basis-[400px] h-[50px]"
+                      key={i}
+                      value={enderecosAll[i]?.city ?? ""}
+                      id={`Cidade`}
+                      disabled
+                      readOnly
+                    />
+                    <LabelInput
+                      className="grow basis-[400px] h-[50px]"
+                      key={i}
+                      value={enderecosAll[i]?.state ?? ""}
+                      id={`UF`}
+                      disabled
+                      readOnly
+                    />
+                    <LabelInput
+                      className="grow basis-[400px] h-[50px]"
+                      key={i}
+                      value={enderecosAll[i]?.neighborhood ?? ""}
+                      id={`Bairro`}
+                      disabled
+                      readOnly
+                    />
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+        <div className="border rounded-sm flex flex-col gap-5 p-5 w-full">
+          <span className="font-semibold text-sm">Veiculos vinculados</span>
+          <div className="flex flex-wrap gap-5 justify-center w-full">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>TIPO</TableHead>
+                  <TableHead>MODELO</TableHead>
+                  <TableHead>MARCA</TableHead>
+                  <TableHead>PLACA</TableHead>
+                  <TableHead>KM</TableHead>
+                  <TableHead>VALOR SEGURO</TableHead>
+                  <TableHead>VALOR MANUTENÇÃO</TableHead>
+                  <TableHead>VALOR ALUGUEL</TableHead>
+                  <TableHead>STATUS</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {veiculos.map((veiculo, i) => {
+                  return <ShowVeiculo veiculo={veiculo} key={i} />;
+                })}
+              </TableBody>
+            </Table>
+          </div>
+        </div>
+
+        <Button>Atualizar informações</Button>
+      </div>
+    </form>
   );
 }

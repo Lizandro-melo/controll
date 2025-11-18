@@ -13,9 +13,6 @@ export default function App({ Component, pageProps }: AppProps) {
         <ProviderAlert>
           <ProviderAuth>
             <Component {...pageProps} />
-            <div className="fixed opacity-50 p-5 flex justify-center items-center font-bold text-white h-[80px] rounded-3xl scale-80 bottom-1 left-2 bg-purple-800">
-              APLICAÇÃO DEMO
-            </div>
           </ProviderAuth>
         </ProviderAlert>
       </ProviderLoading>

@@ -353,6 +353,7 @@ function EditarVeiculo({ veiculo_info, ...props }: Props) {
     setValue("veiculo", veiculo_info.veiculo);
     setValue("cliente", veiculo_info.cliente);
     setpecas(veiculo_info.pecas ?? []);
+    setcpf_cliente(veiculo_info.cliente?.num_cpf ?? "");
     queryClient.fetchQuery({
       queryKey: ["list_pecas"],
       queryFn: async () => {
@@ -557,7 +558,7 @@ function EditarVeiculo({ veiculo_info, ...props }: Props) {
                 </Button>
               </PopoverTrigger>
               <PopoverContent className="w-[400px] p-0">
-                <Command>
+                <Command value={cpf_cliente}>
                   <CommandInput placeholder="CPF do cliente" />
                   <CommandList>
                     <CommandGroup>

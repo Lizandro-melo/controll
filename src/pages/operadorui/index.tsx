@@ -9,6 +9,9 @@ import { parseCookies } from "nookies";
 import axios from "axios";
 import { ContextAuth } from "@/presentation/provider/provider_auth";
 import { dash_data } from "@/domain/entities";
+import Router from "next/router";
+import { IconePeca } from "./peca";
+import { MdOutlineBuild } from "react-icons/md";
 
 export default function Dash() {
   const { headers } = useContext(ContextAuth);
@@ -104,14 +107,48 @@ export default function Dash() {
           Alertas de Manutenção ({dash_data.veiculos_alerta.length})
         </h2>
       </div>
-      <div className="relative border item-resume p-10 rounded-lg flex flex-col justify-center items-center gap-3">
-        <FiAlertTriangle className="stroke-stone-500 w-[30px] h-[30px]" />
-        <div className="flex flex-col items-center text-center">
-          <span className="font-semibold">Nenhum alerta ativo</span>
-          <span className="font-semibold text-sm text-stone-400">
-            Todas as peças estão dentro do prazo de manutenção
-          </span>
-        </div>
+      <div className="relative border item-resume p-5 rounded-lg flex flex-col justify-center items-center gap-3">
+        {dash_data.veiculos_alerta ? (
+          <>
+            {dash_data.veiculos_alerta.map((v) => {
+              return (
+                <div
+                  onClick={() => Router.push(v.veiculo_link)}
+                  className="border w-full rounded-sm p-3 flex-col flex relative bg-amber-100 animate-pulse"
+                >
+                  <div className="text-end">
+                    <span className="text-xs">
+                      {`${v.veiculo.modelo.toUpperCase()} - ${v.veiculo.placa.replace(
+                        /(\w{3})(\w{4})/,
+                        "$1-$2"
+                      )}`}
+                    </span>
+                  </div>
+                  {v.veiculo.tipo_peca.map((p) => {
+                    return (
+                      <span className="text-xs flex  items-center">
+                        {IconePeca[p] || (
+                          <MdOutlineBuild className="w-[35px] h-[35px]" />
+                        )}
+                        {`${p} Precisando de atenção`}
+                      </span>
+                    );
+                  })}
+                </div>
+              );
+            })}
+          </>
+        ) : (
+          <>
+            <FiAlertTriangle className="stroke-stone-500 w-[30px] h-[30px]" />
+            <div className="flex flex-col items-center text-center">
+              <span className="font-semibold">Nenhum alerta ativo</span>
+              <span className="font-semibold text-sm text-stone-400">
+                Todas as peças estão dentro do prazo de manutenção
+              </span>
+            </div>
+          </>
+        )}
       </div>
       <div className="flex flex-wrap gap-5">
         <div className="relative border gap-5 flex flex-col grow basis-[300px] item-resume p-5 rounded-lg">

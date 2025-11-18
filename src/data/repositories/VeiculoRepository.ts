@@ -34,18 +34,14 @@ export default class VeiculoRepository implements IVeiculoRepository {
 
       const veiculo_pecas = veiculo_info.pecas;
 
-      const pecas = await prisma.peca.findMany({
-        where: {
-          id: {
-            in: veiculo_pecas
-              ?.filter((p) => p.veiculo_peca.status)
-              .map((p) => p.peca.id),
+      for (const r of veiculo_pecas?.filter((p) => p.veiculo_peca.status) ??
+        []) {
+        const peca = await prisma.peca.findUnique({
+          where: {
+            id: r.peca.id,
           },
-        },
-      });
-
-      for (const r of pecas) {
-        valor_manutencao += r.preco_medio;
+        });
+        valor_manutencao += peca?.preco_medio ?? 0;
       }
 
       const cliente = await Prisma_logic.cliente.findFirst({

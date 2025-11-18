@@ -27,4 +27,14 @@ export default interface IClienteRepository {
     uuid_cliente: string;
     uuid_auth: string;
   }): Promise<cliente_info>;
+  update_cliente_info({
+    info,
+    uuid_auth,
+  }: {
+    info: cliente_info;
+    uuid_auth: string;
+  }): Promise<void>;
 }
+
+
+let numero = 0
