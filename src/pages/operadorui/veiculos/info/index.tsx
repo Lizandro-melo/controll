@@ -223,7 +223,7 @@ export default function Info() {
               key={i}
               className="grow basis-[100%] text-center rounded-sm border relative font-semibold overflow-hidden"
             >
-              <div
+              {/* <div
                 className="absolute bg-yellow-300 h-full rounded-sm transition-all duration-500 right-0"
                 style={{
                   width: `${Math.min(
@@ -273,7 +273,7 @@ export default function Info() {
                   )}
                   %
                 </span>
-              </div>
+              </div> */}
             </div>
           );
         })}
@@ -675,17 +675,18 @@ function EditarVeiculo({ veiculo_info, ...props }: Props) {
                     </SelectContent>
                   </Select>
                 </div>
-
-                <LabelInput
-                  id={`KM Registro`}
-                  type="number"
-                  defaultValue={p.veiculo_peca.km_registro}
-                  onChange={(e) =>
-                    (p.veiculo_peca.km_registro = parseInt(
-                      e.currentTarget.value
-                    ))
-                  }
-                />
+                {p.peca.tipo && (
+                  <LabelInput
+                    id={`KM Registro`}
+                    type="number"
+                    defaultValue={p.veiculo_peca.km_registro!}
+                    onChange={(e) =>
+                      (p.veiculo_peca.km_registro = parseInt(
+                        e.currentTarget.value
+                      ))
+                    }
+                  />
+                )}
                 <LabelInput
                   id={`Data Última Troca`}
                   type="date"

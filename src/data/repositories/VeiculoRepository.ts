@@ -23,7 +23,9 @@ export default class VeiculoRepository implements IVeiculoRepository {
       for (const p of veiculo_info.pecas ?? []) {
         await prisma.veiculo_peca.create({
           data: {
-            km_registro: p.veiculo_peca.km_registro,
+            km_registro: parseFloat(
+              (p.veiculo_peca.km_registro ?? 0).toString()
+            ),
             data_ultima_troca: p.veiculo_peca.data_ultima_troca,
             status: p.veiculo_peca.status ?? true,
             peca_id: p.peca.id,

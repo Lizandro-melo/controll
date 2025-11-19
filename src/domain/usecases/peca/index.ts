@@ -26,10 +26,6 @@ export async function createPeca({
   const { uuid_auth } = await auth_repository.consult_uuid_auth_by_session({
     session,
   });
-  if (
-    parseFloat(peca.km_troca.toString()) < parseFloat(peca.km_aviso.toString())
-  )
-    throw new Error("O km de aviso não pode ser maior que o km de troca");
   try {
     await peca_repository.create_peca({ peca, uuid_auth });
   } catch {
@@ -47,10 +43,7 @@ export async function updatePeca({
   const { uuid_auth } = await auth_repository.consult_uuid_auth_by_session({
     session,
   });
-  if (
-    parseFloat(peca.km_troca.toString()) < parseFloat(peca.km_aviso.toString())
-  )
-    throw new Error("O km de aviso não pode ser maior que o km de troca");
+
   try {
     await peca_repository.update_peca_by_uuid_auth({ peca, uuid_auth });
   } catch {

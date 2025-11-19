@@ -127,6 +127,8 @@ export default function Pecas() {
               <TableRow>
                 <TableHead>TIPO</TableHead>
                 <TableHead>MARCA</TableHead>
+                <TableHead>TEMPO DE VALIDADE</TableHead>
+                <TableHead>TIPO DE VALIDADE</TableHead>
                 <TableHead>KM DE TROCA</TableHead>
                 <TableHead>KM PARA AVISO</TableHead>
                 <TableHead>PREÇO</TableHead>
@@ -155,11 +157,12 @@ export default function Pecas() {
 }
 
 function NovaPeca({ ...props }: React.ComponentProps<FC<any>>) {
-  const { register, handleSubmit, reset, control } = useForm<peca>();
+  const { register, handleSubmit, reset, control, watch } = useForm<peca>();
   const { headers } = useContext(ContextAuth);
   const { drop_alert } = useContext(ContextAlert);
   const { startLoading } = useContext(ContextLoading);
   const queryClient = useQueryClient();
+  const tipo_vencimento = watch("tipo_vencimento");
   const { mutateAsync: create_peca } = useMutation({
     mutationFn: async (data: peca) => {
       startLoading(
@@ -203,6 +206,7 @@ function NovaPeca({ ...props }: React.ComponentProps<FC<any>>) {
                       <Select
                         onValueChange={field.onChange}
                         value={field.value}
+                        required
                       >
                         <SelectTrigger className="w-full">
                           <SelectValue placeholder="Tipo" />
@@ -223,20 +227,84 @@ function NovaPeca({ ...props }: React.ComponentProps<FC<any>>) {
                 <LabelInput required {...register("marca")} id="Marca" />
               </div>
               <div className="border rounded-sm flex flex-col gap-5 p-5">
-                <LabelInput
-                  {...register("km_troca")}
-                  id="KM para troca"
-                  placeholder="Ex: 20000"
-                  type="number"
-                  required
-                />
-                <LabelInput
-                  {...register("km_aviso")}
-                  id="KM para aviso"
-                  placeholder="Ex: 18000"
-                  type="number"
-                  required
-                />
+                <div className="flex flex-col gap-3 max-w-[500px]">
+                  <Label className="after:ml-0.5 after:text-red-500 after:content-['*']">
+                    Tipo do vencimento
+                  </Label>
+                  <Controller
+                    control={control}
+                    name="tipo_vencimento"
+                    render={({ field }) => (
+                      <Select
+                        onValueChange={field.onChange}
+                        value={field.value}
+                        required
+                      >
+                        <SelectTrigger className="w-full">
+                          <SelectValue placeholder="Tipo" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="TEMPO">Tempo</SelectItem>
+                          <SelectItem value="KM">Km</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    )}
+                  />
+                </div>
+                {tipo_vencimento === "KM" && (
+                  <>
+                    <LabelInput
+                      {...register("km_troca")}
+                      id="KM para troca"
+                      placeholder="Ex: 20000"
+                      type="number"
+                      required
+                    />
+                    <LabelInput
+                      {...register("km_aviso")}
+                      id="KM para aviso"
+                      placeholder="Ex: 18000"
+                      type="number"
+                      required
+                    />
+                  </>
+                )}
+                {tipo_vencimento === "TEMPO" && (
+                  <>
+                    <div className="flex flex-col gap-3 max-w-[500px]">
+                      <Label className="after:ml-0.5 after:text-red-500 after:content-['*']">
+                        Tipo do vencimento
+                      </Label>
+                      <Controller
+                        control={control}
+                        name="tipo_vida_util"
+                        render={({ field }) => (
+                          <Select
+                            onValueChange={field.onChange}
+                            value={field.value!}
+                            required
+                          >
+                            <SelectTrigger className="w-full">
+                              <SelectValue placeholder="Tipo" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="ANOS">Anos</SelectItem>
+                              <SelectItem value="MESES">Meses</SelectItem>
+                              <SelectItem value="DIAS">Dias</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        )}
+                      />
+                    </div>
+
+                    <LabelInput
+                      id="Tempo"
+                      type="number"
+                      {...register("vida_util")}
+                      placeholder="Digite o tempo!"
+                    />
+                  </>
+                )}
                 <LabelInput
                   {...register("preco_medio")}
                   id="Preço médio (R$)"
@@ -276,10 +344,17 @@ function ShowPeca({ peca }: { peca: peca }) {
           {peca.tipo.replaceAll("_", " ")}
         </TableCell>
         <TableCell>{peca.marca}</TableCell>
-        <TableCell>{peca.km_troca} Km</TableCell>
-        <TableCell className="bg-yellow-400 font-extrabold text-white">
-          {peca.km_aviso} Km
+        <TableCell>{peca.tipo_vencimento}</TableCell>
+        <TableCell>
+          {peca.vida_util} {peca.tipo_vida_util === "ANOS" && "Anos"}
+          {peca.tipo_vida_util === "MESES" && "Meses"}
+          {peca.tipo_vida_util === "DIAS" && "DIAS"}
         </TableCell>
+        <TableCell>{peca.km_troca === 0 ? "-" : peca.km_troca} Km</TableCell>
+        <TableCell className="bg-yellow-400 font-extrabold text-white">
+          {peca.km_aviso === 0 ? "-" : peca.km_aviso} Km
+        </TableCell>
+
         <TableCell className="bg-red-400 font-extrabold text-white">
           {Intl.NumberFormat("pt-br", {
             currency: "BRL",
@@ -300,11 +375,15 @@ function EditarPeca({
   onOpenChange: any;
   peca?: peca;
 }) {
-  const { register, handleSubmit, reset, control, setValue } = useForm<peca>({
-    defaultValues: {
-      ...peca,
-    },
-  });
+  const { register, handleSubmit, reset, control, setValue, watch } =
+    useForm<peca>({
+      defaultValues: {
+        ...peca,
+      },
+    });
+
+  const tipo_vencimento = watch("tipo_vencimento");
+
   const { headers } = useContext(ContextAuth);
   const { drop_alert } = useContext(ContextAlert);
   const { startLoading } = useContext(ContextLoading);
@@ -333,12 +412,7 @@ function EditarPeca({
   useEffect(() => {
     if (peca) {
       reset({
-        id: peca.id,
-        marca: peca.marca,
-        km_aviso: peca.km_aviso,
-        km_troca: peca.km_troca,
-        preco_medio: peca.preco_medio,
-        tipo: peca.tipo,
+        ...peca,
       });
     }
   }, [peca, reset]);
@@ -386,20 +460,61 @@ function EditarPeca({
                 <LabelInput required {...register("marca")} id="Marca" />
               </div>
               <div className="border rounded-sm flex flex-col gap-5 p-5">
-                <LabelInput
-                  {...register("km_troca")}
-                  id="KM para troca"
-                  placeholder="Ex: 20000"
-                  type="text"
-                  required
-                />
-                <LabelInput
-                  {...register("km_aviso")}
-                  id="KM para aviso"
-                  placeholder="Ex: 18000"
-                  type="text"
-                  required
-                />
+                {tipo_vencimento === "KM" && (
+                  <>
+                    <LabelInput
+                      {...register("km_troca")}
+                      id="KM para troca"
+                      placeholder="Ex: 20000"
+                      type="number"
+                      required
+                    />
+                    <LabelInput
+                      {...register("km_aviso")}
+                      id="KM para aviso"
+                      placeholder="Ex: 18000"
+                      type="number"
+                      required
+                    />
+                  </>
+                )}
+                {tipo_vencimento === "TEMPO" && (
+                  <>
+                    <div className="flex flex-col gap-3 max-w-[500px]">
+                      <Label className="after:ml-0.5 after:text-red-500 after:content-['*']">
+                        Tipo do vencimento
+                      </Label>
+                      <Controller
+                        control={control}
+                        name="tipo_vida_util"
+                        render={({ field }) => (
+                          <Select
+                            onValueChange={field.onChange}
+                            value={field.value!}
+                            required
+                          >
+                            <SelectTrigger className="w-full">
+                              <SelectValue placeholder="Tipo" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="ANOS">Anos</SelectItem>
+                              <SelectItem value="MESES">Meses</SelectItem>
+                              <SelectItem value="DIAS">Dias</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        )}
+                      />
+                    </div>
+
+                    <LabelInput
+                      id="Tempo"
+                      type="number"
+                      {...register("vida_util")}
+                      placeholder="Digite o tempo!"
+                    />
+                  </>
+                )}
+
                 <LabelInput
                   {...register("preco_medio")}
                   id="Preço médio (R$)"

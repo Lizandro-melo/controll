@@ -91,6 +91,17 @@ enum tipo_peca {
   PEDALEIRA
 }
 
+enum tipo_vida_util {
+  MESES
+  ANOS
+  DIAS
+}
+
+enum tipo_vencimento_peca {
+  TEMPO
+  KM
+}
+
 // Operador
 
 model operador {
@@ -198,26 +209,29 @@ model veiculo {
 }
 
 model peca {
-  id            Int            @id @unique @default(autoincrement())
-  tipo          tipo_peca
-  marca         String
-  km_troca      Float
-  preco_medio   Float
-  km_aviso      Float
-  logo          String?
-  uuid_operador String
-  status        Boolean        @default(true)
-  veiculo_peca  veiculo_peca[]
-  operador      operador       @relation(fields: [uuid_operador], references: [uuid])
+  id              Int                  @id @unique @default(autoincrement())
+  tipo            tipo_peca
+  marca           String
+  km_troca        Float?
+  preco_medio     Float
+  km_aviso        Float?
+  vida_util       Float?
+  tipo_vida_util  tipo_vida_util?
+  tipo_vencimento tipo_vencimento_peca
+  logo            String?
+  uuid_operador   String
+  status          Boolean              @default(true)
+  veiculo_peca    veiculo_peca[]
+  operador        operador             @relation(fields: [uuid_operador], references: [uuid])
 }
 
 model veiculo_peca {
-  id                Int       @id @unique @default(autoincrement())
+  id                Int      @id @unique @default(autoincrement())
   veiculo_uuid      String
   peca_id           Int
-  km_registro       Float
-  data_ultima_troca DateTime?
-  status            Boolean   @default(true)
-  veiculo           veiculo   @relation(fields: [veiculo_uuid], references: [uuid])
-  peca              peca      @relation(fields: [peca_id], references: [id])
+  km_registro       Float?
+  data_ultima_troca DateTime
+  status            Boolean  @default(true)
+  veiculo           veiculo  @relation(fields: [veiculo_uuid], references: [uuid])
+  peca              peca     @relation(fields: [peca_id], references: [id])
 }
